@@ -73,13 +73,40 @@ def filtroMedia(imagem, tamanho_janela):
     imagemMedia = imagemMedia.astype(numpy.uint8)
     cv2.imwrite("media.png", imagemMedia)
     
+#------------------------ Filtros Passa Alta -----------------------------------#
+
+def filtroLaplaciano(imagem, mascara, tamanho_janela):
+    
+    if len(mascara) != tamanho_janela or len(mascara[0]) != tamanho_janela:
+        raise ValueError("Tamanho da máscara inválido para o filtro Laplaciano (deve ser igual ao tamanho da janela).")
+
+    m, n = imagem.shape
+
+    imagemLaplaciana = numpy.zeros(
+        (m - tamanho_janela + 1, n - tamanho_janela + 1), 
+        dtype = imagem.dtype
+    )
+
+    for i in range(m - tamanho_janela + 1):
+        for j in range(n - tamanho_janela + 1):
+            janela = imagem[i : i + tamanho_janela, j : j + tamanho_janela]
+            valor_laplaciano = numpy.sum(mascara * janela)
+            imagemLaplaciana[i, j] = valor_laplaciano
+
+    imagemLaplaciana = imagemLaplaciana.astype(numpy.uint8)
+    cv2.imwrite("laplaciana.png", imagemLaplaciana)
+
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-w", "--tamanho_janela", type = int, default = 3)
+    parser.add_argument("-m", "--mascara", type = str, required = True)
     parser.add_argument("-f", "--tipo_filtro", type = str, default = "mediana")
     parser.add_argument("-s", "--sigma", type = float, default = 1.0 )
     parser.add_argument("entrada", type = str)
     args = parser.parse_args()
+
+    mascara = numpy.loadtxt(args.mascara, dtype = numpy.float32)
 
     imagem = cv2.imread(args.entrada, 0)
     if args.tipo_filtro == "mediana":
@@ -88,5 +115,7 @@ if __name__ == "__main__":
         filtroMedia(imagem, args.tamanho_janela)
     elif args.tipo_filtro == "gaussiana":
         filtroGaussiano(imagem, args.tamanho_janela, args.sigma)
+    elif args.tipo_filtro == "laplaciana":
+        filtroLaplaciano(imagem, mascara, args.tamanho_janela)
     else:
         print("Tipo de filtro inválido!")
