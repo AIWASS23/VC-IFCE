@@ -95,27 +95,71 @@ def filtroLaplaciano(imagem, mascara, tamanho_janela):
 
     imagemLaplaciana = imagemLaplaciana.astype(numpy.uint8)
     cv2.imwrite("laplaciana.png", imagemLaplaciana)
+    
+def filtroPrewitt(imagem):
+    
+    # Máscaras de Prewitt
+    mascara_x = numpy.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
+    mascara_y = numpy.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
 
+    m, n = imagem.shape
+
+    imagemPrewittX = numpy.zeros((m - 2, n - 2), dtype = imagem.dtype)
+    imagemPrewittY = numpy.zeros((m - 2, n - 2), dtype = imagem.dtype)
+
+    for i in range(m - 2):
+        for j in range(n - 2):
+            janela = imagem[i : i + 3, j : j + 3]
+            valor_prewitt_x = numpy.sum(mascara_x * janela)
+            valor_prewitt_y = numpy.sum(mascara_y * janela)
+            imagemPrewittX[i, j] = valor_prewitt_x
+            imagemPrewittY[i, j] = valor_prewitt_y
+
+    imagemPrewitt = numpy.sqrt(imagemPrewittX ** 2 + imagemPrewittY ** 2)
+
+    imagemPrewitt = (imagemPrewitt - numpy.min(imagemPrewitt)) / (numpy.max(imagemPrewitt) - numpy.min(imagemPrewitt)) * 255
+
+    imagemPrewitt = imagemPrewitt.astype(numpy.uint8)
+    cv2.imwrite("prewitt.png", imagemPrewitt)
+
+# -------------------------------- Menu ------------------------------------------ #
     
 if __name__ == "__main__":
+    
+# --------------- configuração do CLI ------------------------- #  
+  
     parser = argparse.ArgumentParser()
-    parser.add_argument("-w", "--tamanho_janela", type = int, default = 3)
-    parser.add_argument("-m", "--mascara", type = str, required = True)
+    parser.add_argument("-w", "--tamanho_janela", type = int, default = 3, required = False)
+    parser.add_argument("-g", "--imagem_colorida", type = bool, default = True, required = False)
+    parser.add_argument("-m", "--mascara", type = str, required = False)
     parser.add_argument("-f", "--tipo_filtro", type = str, default = "mediana")
-    parser.add_argument("-s", "--sigma", type = float, default = 1.0 )
+    parser.add_argument("-s", "--sigma", type = float, default = 1.0, required = False )
     parser.add_argument("entrada", type = str)
     args = parser.parse_args()
 
-    mascara = numpy.loadtxt(args.mascara, dtype = numpy.float32)
+# ------------------- Leituras Adicionais ---------------------- #
 
-    imagem = cv2.imread(args.entrada, 0)
-    if args.tipo_filtro == "mediana":
-        filtroMediana(imagem, args.tamanho_janela)
-    elif args.tipo_filtro == "media":
+    if args.imagem_colorida == True:
+        imagem = cv2.imread(args.entrada) # Preciso de cachaça pra fazer isso
+    else:
+        imagem = cv2.imread(args.entrada, 0)
+    
+
+# ------------------- Filtros Passa Baixa --------------------- #
+
+    if args.tipo_filtro == "media":
         filtroMedia(imagem, args.tamanho_janela)
+    elif args.tipo_filtro == "mediana":
+        filtroMediana(imagem, args.tamanho_janela)
     elif args.tipo_filtro == "gaussiana":
         filtroGaussiano(imagem, args.tamanho_janela, args.sigma)
+    
+# ------------------- Filtros Passa Alta ----------------------- #
+    
     elif args.tipo_filtro == "laplaciana":
+        mascara = numpy.loadtxt(args.mascara, dtype = numpy.float32)
         filtroLaplaciano(imagem, mascara, args.tamanho_janela)
+    elif args.tipo_filtro == "prewitt":
+        filtroPrewitt(imagem)
     else:
         print("Tipo de filtro inválido!")
