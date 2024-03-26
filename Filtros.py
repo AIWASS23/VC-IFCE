@@ -2,6 +2,48 @@ import cv2
 import numpy
 import argparse
 
+# ------------------------ Filtros Passa Baixa ----------------------------- #
+
+# Questão 1
+
+def filtroMedia(imagem, tamanho_janela):
+    m, n = imagem.shape
+    imagemMedia = numpy.zeros([m, n])
+
+    for i in range(tamanho_janela // 2, m - tamanho_janela // 2):
+        for j in range(tamanho_janela // 2, n - tamanho_janela // 2):
+            janela = [
+                imagem[i - k][j - l]
+                for k in range(tamanho_janela)
+                for l in range(tamanho_janela)
+            ]
+            soma = sum(janela)
+            imagemMedia[i, j] = soma / (tamanho_janela ** 2)
+
+    imagemMedia = imagemMedia.astype(numpy.uint8)
+    cv2.imwrite("media.png", imagemMedia)
+    
+# Questão 2
+
+def filtroMediana(imagem, tamanho_janela):
+    m, n = imagem.shape
+    imagemMediana = numpy.zeros([m, n])
+
+    for i in range(tamanho_janela // 2, m - tamanho_janela // 2):
+        for j in range(tamanho_janela // 2, n - tamanho_janela // 2):
+            janela = [
+                imagem[i - k][j - l]
+                for k in range(tamanho_janela)
+                for l in range(tamanho_janela)
+            ]
+            temp = sorted(janela)
+            imagemMediana[i, j] = temp[len(temp) // 2]
+
+    imagemMediana = imagemMediana.astype(numpy.uint8)
+    cv2.imwrite("mediana.png", imagemMediana)
+    
+# Questão 3
+
 def filtroGaussiano(imagem, tamanho_janela, sigma):
   
     if tamanho_janela % 2 == 0:
@@ -38,42 +80,10 @@ def filtroGaussiano(imagem, tamanho_janela, sigma):
                 imagemGaussiana[i, j] = numpy.sum(imagem[i:i + k_m, j:j + k_n] * kernel)
 
     cv2.imwrite("gaussiana.png", imagemGaussiana)
-
-def filtroMediana(imagem, tamanho_janela):
-    m, n = imagem.shape
-    imagemMediana = numpy.zeros([m, n])
-
-    for i in range(tamanho_janela // 2, m - tamanho_janela // 2):
-        for j in range(tamanho_janela // 2, n - tamanho_janela // 2):
-            janela = [
-                imagem[i - k][j - l]
-                for k in range(tamanho_janela)
-                for l in range(tamanho_janela)
-            ]
-            temp = sorted(janela)
-            imagemMediana[i, j] = temp[len(temp) // 2]
-
-    imagemMediana = imagemMediana.astype(numpy.uint8)
-    cv2.imwrite("mediana.png", imagemMediana)
-    
-def filtroMedia(imagem, tamanho_janela):
-    m, n = imagem.shape
-    imagemMedia = numpy.zeros([m, n])
-
-    for i in range(tamanho_janela // 2, m - tamanho_janela // 2):
-        for j in range(tamanho_janela // 2, n - tamanho_janela // 2):
-            janela = [
-                imagem[i - k][j - l]
-                for k in range(tamanho_janela)
-                for l in range(tamanho_janela)
-            ]
-            soma = sum(janela)
-            imagemMedia[i, j] = soma / (tamanho_janela ** 2)
-
-    imagemMedia = imagemMedia.astype(numpy.uint8)
-    cv2.imwrite("media.png", imagemMedia)
     
 #------------------------ Filtros Passa Alta -----------------------------------#
+
+# Questão 4
 
 def filtroLaplaciano(imagem, mascara, tamanho_janela):
     
@@ -96,6 +106,8 @@ def filtroLaplaciano(imagem, mascara, tamanho_janela):
     imagemLaplaciana = imagemLaplaciana.astype(numpy.uint8)
     cv2.imwrite("laplaciana.png", imagemLaplaciana)
     
+# Questão 5
+    
 def filtroPrewitt(imagem):
     
     # Máscaras de Prewitt
@@ -116,11 +128,42 @@ def filtroPrewitt(imagem):
             imagemPrewittY[i, j] = valor_prewitt_y
 
     imagemPrewitt = numpy.sqrt(imagemPrewittX ** 2 + imagemPrewittY ** 2)
-
+    
+    #imagemPrewitt = (imagemPrewitt / numpy.max(imagemPrewitt)) * 255
     imagemPrewitt = (imagemPrewitt - numpy.min(imagemPrewitt)) / (numpy.max(imagemPrewitt) - numpy.min(imagemPrewitt)) * 255
 
     imagemPrewitt = imagemPrewitt.astype(numpy.uint8)
     cv2.imwrite("prewitt.png", imagemPrewitt)
+    
+# Questão 6
+
+def filtroSobel(imagem):
+
+    # Máscaras de Sobel
+    mascara_x = numpy.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    mascara_y = numpy.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+
+    m, n = imagem.shape
+
+    imagemSobelX = numpy.zeros((m - 2, n - 2), dtype = imagem.dtype)
+    imagemSobelY = numpy.zeros((m - 2, n - 2), dtype = imagem.dtype)
+
+    for i in range(m - 2):
+        for j in range(n - 2):
+            janela = imagem[i : i + 3, j : j + 3]
+            valor_sobel_x = numpy.sum(mascara_x * janela)
+            valor_sobel_y = numpy.sum(mascara_y * janela)
+            imagemSobelX[i, j] = valor_sobel_x
+            imagemSobelY[i, j] = valor_sobel_y
+
+    imagemSobel = numpy.sqrt(imagemSobelX ** 2 + imagemSobelY ** 2)
+
+    # imagemSobel = (imagemSobel / numpy.max(imagemSobel)) * 255
+    imagemSobel = (imagemSobel - numpy.min(imagemSobel)) / (numpy.max(imagemSobel) - numpy.min(imagemSobel)) * 255
+
+    imagemSobel = imagemSobel.astype(numpy.uint8)
+    cv2.imwrite("sobel.png", imagemSobel)
+
 
 # -------------------------------- Menu ------------------------------------------ #
     
