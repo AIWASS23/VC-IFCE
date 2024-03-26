@@ -25,9 +25,6 @@ def verificar_formato_imagem(imagem):
         elif imagem.shape[2] == 4:
             return "RGBA"
     elif len(imagem.shape) == 2:
-        # if imagem.max() == 1:
-        #     return "Binária"
-        # else:
         return "Grayscale"
     else:
         raise ValueError("Formato de imagem não suportado.")
@@ -49,46 +46,21 @@ def calcular_histograma_manual(imagem):
 
     elif formato == "Grayscale":
         eixo_y = calcular_histograma_canal(imagem, 0)
+        print("Tons de Cinza")
+        print(eixo_y)
         return eixo_y
-
-    # elif formato == "Binária":
-    #     eixo_y = [0, 0]
-    #     eixo_y[imagem[0][0]] += 1
-    #     print("Binaria")
-    #     print(eixo_y)
-    #     return eixo_y
-
-
-def plotar_histograma(eixo_y, titulo):
-    plt.figure(figsize=(8, 6))
-    plt.bar(range(len(eixo_y)), eixo_y, color='black')
-    plt.title(titulo)
-    plt.xlabel('Níveis de Intensidade')
-    plt.ylabel('Frequência')
-    plt.show()
 
 #imagem = cv2.imread("trabalho.png", cv2.IMREAD_COLOR) # RBG ✅
 imagem = cv2.imread("trabalho.png", cv2.IMREAD_GRAYSCALE) # tons de cinza ✅
 #imagem = cv2.imread("trabalho.png", cv2.IMREAD_UNCHANGED) # RBGA ✅
 
-_, imagem_binaria = cv2.threshold(imagem, 127, 255, cv2.THRESH_BINARY) # IMREAD_GRAYSCALE
-
-
-#formato = verificar_formato_imagem(imagem)
-formato = verificar_formato_imagem(imagem_binaria)
+formato = verificar_formato_imagem(imagem)
 
 if formato == "RGB":
     eixo_y_r, eixo_y_g, eixo_y_b = calcular_histograma_manual(imagem)
-    plotar_histograma(eixo_y_r, 'Histograma - Canal R')
-    plotar_histograma(eixo_y_g, 'Histograma - Canal G')
-    plotar_histograma(eixo_y_b, 'Histograma - Canal B')
 
 elif formato == "RGBA":
     eixo_y_r, eixo_y_g, eixo_y_b = calcular_histograma_manual(imagem)
-    plotar_histograma(eixo_y_r, 'Histograma - Canal R')
-    plotar_histograma(eixo_y_g, 'Histograma - Canal G')
-    plotar_histograma(eixo_y_b, 'Histograma - Canal B')
 
 elif formato == "Grayscale":
     eixo_y = calcular_histograma_manual(imagem)
-    plotar_histograma(eixo_y, 'Histograma - Tons de Cinza')

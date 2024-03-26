@@ -8,7 +8,7 @@ import argparse
 
 def filtroMedia(imagem, tamanho_janela):
     m, n = imagem.shape
-    imagemMedia = numpy.zeros([m, n])
+    imagemMedia = numpy.zeros([m, n], dtype = imagem.dtype)
 
     for i in range(tamanho_janela // 2, m - tamanho_janela // 2):
         for j in range(tamanho_janela // 2, n - tamanho_janela // 2):
@@ -27,7 +27,7 @@ def filtroMedia(imagem, tamanho_janela):
 
 def filtroMediana(imagem, tamanho_janela):
     m, n = imagem.shape
-    imagemMediana = numpy.zeros([m, n])
+    imagemMediana = numpy.zeros([m, n], dtype = imagem.dtype)
 
     for i in range(tamanho_janela // 2, m - tamanho_janela // 2):
         for j in range(tamanho_janela // 2, n - tamanho_janela // 2):
@@ -70,7 +70,7 @@ def filtroGaussiano(imagem, tamanho_janela, sigma):
 
     m, n = imagem.shape
     k_m, k_n = kernel.shape
-    imagemGaussiana = numpy.zeros((m - k_m + 1, n - k_n + 1))
+    imagemGaussiana = numpy.zeros((m - k_m + 1, n - k_n + 1), dtype = imagem.dtype)
 
     for i in range(m - k_m + 1):
         for j in range(n - k_n + 1):
@@ -199,5 +199,7 @@ if __name__ == "__main__":
         filtroLaplaciano(imagem, mascara, args.tamanho_janela)
     elif args.tipo_filtro == "prewitt":
         filtroPrewitt(imagem)
+    elif args.tipo_filtro == "sobel":
+        filtroSobel(imagem)
     else:
         print("Tipo de filtro inválido!")
