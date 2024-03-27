@@ -1,8 +1,11 @@
-import matplotlib.pyplot as plt
-import numpy as np
+import matplotlib.pyplot
+import numpy
 import cv2
+import argparse
 
-def calcular_histograma_canal(imagem, canal):
+# Questão 7
+
+def calcularHistograma(imagem, canal):
     eixo_y = [0] * 256
 
     if len(imagem.shape) == 3:
@@ -18,7 +21,7 @@ def calcular_histograma_canal(imagem, canal):
 
     return eixo_y
 
-def verificar_formato_imagem(imagem):
+def verificarImagem(imagem):
     if len(imagem.shape) == 3:
         if imagem.shape[2] == 3:
             return "RGB"
@@ -29,38 +32,126 @@ def verificar_formato_imagem(imagem):
     else:
         raise ValueError("Formato de imagem não suportado.")
     
-def calcular_histograma_manual(imagem):
-    formato = verificar_formato_imagem(imagem)
+def apresentarHistograma(imagem):
+    formato = verificarImagem(imagem)
 
     if formato == "RGB":
-        eixo_y_r = calcular_histograma_canal(imagem, 0)
-        eixo_y_g = calcular_histograma_canal(imagem, 1)
-        eixo_y_b = calcular_histograma_canal(imagem, 2)
-        return eixo_y_r, eixo_y_g, eixo_y_b
+        eixoVermelho = calcularHistograma(imagem, 0)
+        eixoVerde = calcularHistograma(imagem, 1)
+        eixoAzul = calcularHistograma(imagem, 2)
+        matplotlib.pyplot.subplot(131).bar(numpy.arange(256), eixoVermelho, color = 'red')
+        matplotlib.pyplot.subplot(132).bar(numpy.arange(256), eixoVerde, color = 'green')
+        matplotlib.pyplot.subplot(133).bar(numpy.arange(256), eixoAzul, color = 'blue')
+        matplotlib.pyplot.title('Histograma RGB')
+        matplotlib.pyplot.savefig("histogramaRGB.png")
 
     elif formato == "RGBA":
-        eixo_y_r = calcular_histograma_canal(imagem, 0)
-        eixo_y_g = calcular_histograma_canal(imagem, 1)
-        eixo_y_b = calcular_histograma_canal(imagem, 2)
-        return eixo_y_r, eixo_y_g, eixo_y_b
+        eixoVermelho = calcularHistograma(imagem, 0)
+        eixoVerde = calcularHistograma(imagem, 1)
+        eixoAzul = calcularHistograma(imagem, 2)
+        matplotlib.pyplot.subplot(131).bar(numpy.arange(256), eixoVermelho, color = 'red')
+        matplotlib.pyplot.subplot(132).bar(numpy.arange(256), eixoVerde, color = 'green')
+        matplotlib.pyplot.subplot(133).bar(numpy.arange(256), eixoAzul, color = 'blue')
+        matplotlib.pyplot.title('Histograma RGBA')
+        matplotlib.pyplot.savefig("histogramaRGBA.png")
 
     elif formato == "Grayscale":
-        eixo_y = calcular_histograma_canal(imagem, 0)
-        print("Tons de Cinza")
-        print(eixo_y)
-        return eixo_y
+        eixoCinza = calcularHistograma(imagem, 0)
+        matplotlib.pyplot.subplot(111).bar(numpy.arange(256), eixoCinza, color = 'gray')
+        matplotlib.pyplot.title('Histograma Grayscale')
+        matplotlib.pyplot.savefig("histogramaGrayscale.png")
 
-#imagem = cv2.imread("trabalho.png", cv2.IMREAD_COLOR) # RBG ✅
-imagem = cv2.imread("trabalho.png", cv2.IMREAD_GRAYSCALE) # tons de cinza ✅
-#imagem = cv2.imread("trabalho.png", cv2.IMREAD_UNCHANGED) # RBGA ✅
+# Questão 8
 
-formato = verificar_formato_imagem(imagem)
+def equalizador(imagem):
+    altura, largura = imagem.shape[:2]
 
-if formato == "RGB":
-    eixo_y_r, eixo_y_g, eixo_y_b = calcular_histograma_manual(imagem)
+    # Calculo do Histograma
+    frequencia = [0] * 256
+    valores_intensidade = [0] * 256
+    probabilidade = 0
 
-elif formato == "RGBA":
-    eixo_y_r, eixo_y_g, eixo_y_b = calcular_histograma_manual(imagem)
+    for x in range(altura):
+        for y in range(largura):  
+            frequencia[imagem[x, y]] = frequencia[imagem[x, y]] + 1
 
-elif formato == "Grayscale":
-    eixo_y = calcular_histograma_manual(imagem)
+    # Calculo de probabilidade e probabilidade acumulada
+    pixels = altura * largura
+    for i in range(256):
+        probabilidade = probabilidade + frequencia[i] / float(pixels)
+        valores_intensidade[i] = round(probabilidade * 255)
+
+    # Aplicar equalização ao imagem
+    for x in range(altura):
+        for y in range(largura): 
+            imagem[x, y] = valores_intensidade[imagem[x, y]]
+
+    return imagem, valores_intensidade
+
+def equalizarImagemHistograma(imagem):
+    # Carregar a imagem
+    imagem = cv2.imread(imagem, 0)
+
+    # Equalizar o histograma
+    imagemEqualizada, histogramaEqualizado = equalizador(imagem)
+
+    # Plotar o histograma equalizado
+    matplotlib.pyplot.subplot(121).bar(numpy.arange(256), histogramaEqualizado, color = 'gray')
+    matplotlib.pyplot.title('Histograma Equalizado')
+
+    # Mostrar a imagem equalizada
+    matplotlib.pyplot.subplot(122).imshow(imagemEqualizada, cmap = "gray")
+    matplotlib.pyplot.title('Imagem Equalizada')
+
+    # Salvar o histograma equalizado como imagem PNG
+    matplotlib.pyplot.savefig("histogram.png")
+
+    # Salvar a imagem equalizada
+    cv2.imwrite("imagemEqualizada.png", imagemEqualizada)
+    
+# Questão 9
+
+def luminancia(imagem):
+    # Verificar se a imagem é colorida
+    if len(imagem.shape) < 3:
+        return imagem
+
+    # Aplicar a fórmula de luminância
+    luminancia = numpy.dot(imagem[..., :3], [0.299, 0.587, 0.114])
+    return luminancia.astype(numpy.uint8)
+
+def limiarizacao(imagem, limiar):
+    binaria = luminancia(imagem)
+    for x in range(binaria.shape[0]):
+        for y in range(binaria.shape[1]):
+            if binaria[x, y] > limiar:
+                binaria[x, y] = 255
+            else:
+                binaria[x, y] = 0
+                
+    cv2.imwrite("imagemLimiarizada.png", binaria)
+    
+if __name__ == "__main__":
+    
+# --------------- configuração do CLI ------------------------- #  
+  
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-o", "--operacao", type = str, default = "histograma")
+    parser.add_argument("-l", "--limiar", type = int, default = 127)
+    parser.add_argument("entrada", type = str)
+    args = parser.parse_args()
+    
+# ------------------- Leituras Adicionais ---------------------- #
+    
+    imagem = cv2.imread(args.entrada)
+
+# ------------------- Operações --------------------- #
+
+    if args.operacao == "histograma":
+        apresentarHistograma(imagem) 
+    elif args.operacao == "equalizacao":
+        equalizarImagemHistograma(imagem)
+    elif args.operacao == "limiarizacao":
+        limiarizacao(imagem, args.limiar)
+    else:
+        print("Tipo de operacão inválido!")

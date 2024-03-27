@@ -1,83 +1,47 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import cv2
+import numpy
 
-def calcular_histograma_canal(imagem, canal):
-    eixo_y = [0] * 256
+def luminancia(imagem):
+    # Verificar se a imagem é colorida
+    if len(imagem.shape) < 3:
+        return imagem
 
-    if len(imagem.shape) == 3:
-        for x in range(imagem.shape[0]):
-            for y in range(imagem.shape[1]):
-                intensidade = imagem[x, y, canal]
-                eixo_y[intensidade] += 1
-    elif len(imagem.shape) == 2:
-        for x in range(imagem.shape[0]):
-            for y in range(imagem.shape[1]):
-                intensidade = imagem[x, y]
-                eixo_y[intensidade] += 1
+    # Aplicar a fórmula de luminância
+    luminancia = numpy.dot(imagem[..., :3], [0.299, 0.587, 0.114])
+    return luminancia.astype(numpy.uint8)
 
-    return eixo_y
-
-def verificar_formato_imagem(imagem):
-    if len(imagem.shape) == 3:
-        if imagem.shape[2] == 3:
-            return "RGB"
-        elif imagem.shape[2] == 4:
-            return "RGBA"
-    elif len(imagem.shape) == 2:
-        return "Grayscale"
-    else:
-        raise ValueError("Formato de imagem não suportado.")
+def limiarizacao(imagem, limiar):
+    binaria = luminancia(imagem)
+    for x in range(binaria.shape[0]):
+        for y in range(binaria.shape[1]):
+            if binaria[x, y] > limiar:
+                binaria[x, y] = 255
+            else:
+                binaria[x, y] = 0
+                
+    cv2.imwrite("imagemLimiarizada.png", binaria)
     
-def calcular_histograma_manual(imagem):
-    formato = verificar_formato_imagem(imagem)
-
-    if formato == "RGB":
-        eixo_y_r = calcular_histograma_canal(imagem, 0)
-        eixo_y_g = calcular_histograma_canal(imagem, 1)
-        eixo_y_b = calcular_histograma_canal(imagem, 2)
-        return eixo_y_r, eixo_y_g, eixo_y_b
-
-    elif formato == "RGBA":
-        eixo_y_r = calcular_histograma_canal(imagem, 0)
-        eixo_y_g = calcular_histograma_canal(imagem, 1)
-        eixo_y_b = calcular_histograma_canal(imagem, 2)
-        return eixo_y_r, eixo_y_g, eixo_y_b
-
-    elif formato == "Grayscale":
-        eixo_y = calcular_histograma_canal(imagem, 0)
-        return eixo_y
-
-def plotar_histograma(eixo_y, titulo):
-    plt.figure(figsize=(8, 6))
-    plt.bar(range(len(eixo_y)), eixo_y, color='black')
-    plt.title(titulo)
-    plt.xlabel('Níveis de Intensidade')
-    plt.ylabel('Frequência')
-    plt.show()
-
-#imagem = cv2.imread("trabalho.png", cv2.IMREAD_COLOR) # RBG ✅
-imagem = cv2.imread("trabalho.png", cv2.IMREAD_GRAYSCALE) # tons de cinza ✅
-#imagem = cv2.imread("trabalho.png", cv2.IMREAD_UNCHANGED) # RBGA ✅
-
-_, imagem_binaria = cv2.threshold(imagem, 127, 255, cv2.THRESH_BINARY) # IMREAD_GRAYSCALE
+def niveisDeLimiarizacao(imagem, limiares, niveis):
+    img_multilevel = numpy.zeros_like(imagem)
+    
+    for i in range(len(niveis)):
+        if i == 0:
+            img_multilevel[imagem < limiares[i]] = niveis[i]
+        else:
+            img_multilevel[(imagem >= limiares[i-1]) & (imagem < limiares[i])] = niveis[i]
+    
+    return img_multilevel
 
 
-#formato = verificar_formato_imagem(imagem)
-formato = verificar_formato_imagem(imagem_binaria)
+def multilimiarizacao(imagem, limiares, niveis):
+    binaria = niveisDeLimiarizacao(luminancia(imagem), limiares, niveis)
+    
+    cv2.imwrite("imagemMultiLimiarizada.png", binaria)
 
-if formato == "RGB":
-    eixo_y_r, eixo_y_g, eixo_y_b = calcular_histograma_manual(imagem)
-    plotar_histograma(eixo_y_r, 'Histograma - Canal R')
-    plotar_histograma(eixo_y_g, 'Histograma - Canal G')
-    plotar_histograma(eixo_y_b, 'Histograma - Canal B')
+# Carregar a imagem
+imagem = cv2.imread('trabalho.png', cv2.IMREAD_COLOR)
 
-elif formato == "RGBA":
-    eixo_y_r, eixo_y_g, eixo_y_b = calcular_histograma_manual(imagem)
-    plotar_histograma(eixo_y_r, 'Histograma - Canal R')
-    plotar_histograma(eixo_y_g, 'Histograma - Canal G')
-    plotar_histograma(eixo_y_b, 'Histograma - Canal B')
+# Definir os limiares e os níveis de cinza
+limiares = [50, 100, 150]
+niveis = [0, 85, 170, 255]  # níveis de cinza para a multilimiarização
 
-elif formato == "Grayscale":
-    eixo_y = calcular_histograma_manual(imagem)
-    plotar_histograma(eixo_y, 'Histograma - Tons de Cinza')
