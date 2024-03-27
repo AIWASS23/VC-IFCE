@@ -90,7 +90,7 @@ def equalizador(imagem):
 
 def equalizarImagemHistograma(imagem):
     # Carregar a imagem
-    imagem = cv2.imread(imagem, 0)
+    imagem = luminancia(imagem)
 
     # Equalizar o histograma
     imagemEqualizada, histogramaEqualizado = equalizador(imagem)
@@ -104,7 +104,7 @@ def equalizarImagemHistograma(imagem):
     matplotlib.pyplot.title('Imagem Equalizada')
 
     # Salvar o histograma equalizado como imagem PNG
-    matplotlib.pyplot.savefig("histogram.png")
+    matplotlib.pyplot.savefig("histograma.png")
 
     # Salvar a imagem equalizada
     cv2.imwrite("imagemEqualizada.png", imagemEqualizada)
@@ -131,27 +131,72 @@ def limiarizacao(imagem, limiar):
                 
     cv2.imwrite("imagemLimiarizada.png", binaria)
     
+# Questão 10
+
+def niveisDeLimiarizacao(imagem, limiares, niveis):
+    if len(niveis) > len(limiares) + 1:
+        print("Erro: O número de níveis (-n) não deve ser 2 a mais que o número de limiares (-m).")
+        exit()
+    
+    imagemMultilevel = numpy.zeros_like(imagem)
+    
+    for i in range(len(niveis)):
+        if i == 0:
+            imagemMultilevel[imagem < limiares[i]] = niveis[i]
+        elif i == len(niveis) - 1:
+            imagemMultilevel[imagem >= limiares[i-1]] = niveis[i]
+        else:
+            imagemMultilevel[(imagem >= limiares[i-1]) & (imagem < limiares[i])] = niveis[i]
+    
+    return imagemMultilevel
+
+
+
+def multilimiarizacao(imagem, limiares, niveis):
+    binaria = niveisDeLimiarizacao(luminancia(imagem), limiares, niveis)
+    cv2.imwrite("imagemMultiLimiarizada.png", binaria)
+
 if __name__ == "__main__":
     
-# --------------- configuração do CLI ------------------------- #  
-  
+    # Configuração do CLI
     parser = argparse.ArgumentParser()
     parser.add_argument("-o", "--operacao", type = str, default = "histograma")
     parser.add_argument("-l", "--limiar", type = int, default = 127)
-    parser.add_argument("entrada", type = str)
+    parser.add_argument(
+        "-i", 
+        "--imagem", 
+        required = True,
+        help = "Caminho da imagem de entrada."
+    )
+    parser.add_argument(
+        "-m", 
+        "--limiares", 
+        nargs = '+', 
+        type = int, 
+        default = [50, 100, 150],
+        help = "Lista de limiares para a multilimiarização."
+    )
+    parser.add_argument(
+        "-n", 
+        "--niveis", 
+        nargs='+', 
+        type=int, 
+        default = [0, 85, 170, 255],
+        help = "Lista de níveis de cinza para a multilimiarização."
+    )
     args = parser.parse_args()
     
-# ------------------- Leituras Adicionais ---------------------- #
-    
-    imagem = cv2.imread(args.entrada)
+    # Leitura da imagem
+    imagem = cv2.imread(args.imagem)
 
-# ------------------- Operações --------------------- #
-
+    # Operações
     if args.operacao == "histograma":
         apresentarHistograma(imagem) 
     elif args.operacao == "equalizacao":
         equalizarImagemHistograma(imagem)
     elif args.operacao == "limiarizacao":
         limiarizacao(imagem, args.limiar)
+    elif args.operacao == "multilimiarizacao":
+        multilimiarizacao(imagem, args.limiares, args.niveis)
     else:
         print("Tipo de operacão inválido!")
