@@ -159,9 +159,24 @@ def multilimiarizacao(imagem, limiares, niveis):
 if __name__ == "__main__":
     
     # Configuração do CLI
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-o", "--operacao", type = str, default = "histograma")
-    parser.add_argument("-l", "--limiar", type = int, default = 127)
+    parser = argparse.ArgumentParser(
+        description = "Processamento de imagens utilizando diferentes operações."
+    )
+    parser.add_argument(
+        "-o", 
+        "--operacao",
+        choices = ['histograma', 'equalizacao', 'limiarizacao', 'multilimiarizacao'],
+        type = str, 
+        default = "histograma", 
+        help = "Opções de Operação: histograma, equalizacao, limiarizacao e multilimiarizacao."
+    )
+    parser.add_argument(
+        "-l", 
+        "--limiar", 
+        type = int, 
+        default = 127, 
+        help = "Valor do Limiar para Limiarização."
+    )
     parser.add_argument(
         "-i", 
         "--imagem", 

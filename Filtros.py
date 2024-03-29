@@ -87,9 +87,9 @@ def filtroGaussiano(imagem, tamanho_janela, sigma):
 
 def filtroLaplaciano(imagem, mascara, tamanho_janela):
     
-    if len(mascara) != tamanho_janela or len(mascara[0]) != tamanho_janela:
+    if len(mascara) != tamanho_janela or len(mascara[0]) != tamanho_janela: 
         raise ValueError("Tamanho da máscara inválido para o filtro Laplaciano (deve ser igual ao tamanho da janela).")
-
+        
     m, n = imagem.shape
 
     imagemLaplaciana = numpy.zeros(
@@ -171,17 +171,52 @@ if __name__ == "__main__":
     
 # --------------- configuração do CLI ------------------------- #  
   
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-w", "--tamanho_janela", type = int, default = 3, required = False)
-    parser.add_argument("-m", "--mascara", type = str, required = False)
-    parser.add_argument("-f", "--tipo_filtro", type = str, default = "mediana")
-    parser.add_argument("-s", "--sigma", type = float, default = 1.0, required = False )
-    parser.add_argument("entrada", type = str)
+    parser = argparse.ArgumentParser(
+        description = "Processamento de imagens utilizando diferentes filtros."
+    )
+    parser.add_argument(
+        "-w", 
+        "--tamanho_janela", 
+        type = int, 
+        default = 3,
+        help = "Valor do tamanho da janela que será convertido para (w x w)."
+    )
+    parser.add_argument(
+        "-m", 
+        "--mascara", 
+        type = str, 
+        required = False,
+        help = "Mascará no formato .txt utilizado exclusivamente no filtro lapraciano."
+    )
+    parser.add_argument(
+        "-f", 
+        "--tipo_filtro", 
+        type = str, 
+        default = "mediana",
+        help = "Opções de Filtros: media, mediana, gaussiano, laplaciano, prewitt e sobel."
+    )
+    parser.add_argument(
+        "-s", 
+        "--sigma", 
+        type = float, 
+        default = 1.0, 
+        required = False,
+        help = "Valor do sigma utilizado exclusivamente no filtro gaussiano."
+    )
+    parser.add_argument(
+        "-i", 
+        "--imagem", 
+        required = True,
+        help = "Caminho da imagem de entrada."
+    )
     args = parser.parse_args()
 
 # ------------------- Leituras Adicionais ---------------------- #
-    
-    imagem = cv2.imread(args.entrada, 0) # trabalha com 2 canais
+
+    if args.tamanho_janela <= 0:
+        parser.error(f"O valor de {args.tamanho_janela} para janela é inválido. Deve ser um número inteiro positivo.")
+
+    imagem = cv2.imread(args.imagem, 0) # trabalha com 2 canais
 
 # ------------------- Filtros Passa Baixa --------------------- #
 
@@ -189,12 +224,12 @@ if __name__ == "__main__":
         filtroMedia(imagem, args.tamanho_janela)
     elif args.tipo_filtro == "mediana":
         filtroMediana(imagem, args.tamanho_janela)
-    elif args.tipo_filtro == "gaussiana":
+    elif args.tipo_filtro == "gaussiano":
         filtroGaussiano(imagem, args.tamanho_janela, args.sigma)
     
 # ------------------- Filtros Passa Alta ----------------------- #
     
-    elif args.tipo_filtro == "laplaciana":
+    elif args.tipo_filtro == "laplaciano":
         mascara = numpy.loadtxt(args.mascara, dtype = numpy.float32)
         filtroLaplaciano(imagem, mascara, args.tamanho_janela)
     elif args.tipo_filtro == "prewitt":
