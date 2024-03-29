@@ -39,11 +39,11 @@ O script aceita os seguintes parâmetros através da linha de comando:
 ##### Filtro Laplaciano
 * Para utilizar o filtro Laplaciano, é necessário fornecer um arquivo .txt contendo a máscara. Por exemplo, uma máscara válida é:
 
-\```plaintext
-0 -1  0
--1  4 -1
- 0 -1  0
-\```
+
+0 -1  0 <br>
+-1  4 -1 <br>
+ 0 -1  0 <br>
+
 
 
 A máscara deve ser quadrada
