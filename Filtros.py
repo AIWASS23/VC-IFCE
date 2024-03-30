@@ -88,7 +88,8 @@ def filtroGaussiano(imagem, tamanho_janela, sigma):
 def filtroLaplaciano(imagem, mascara, tamanho_janela):
     
     if len(mascara) != tamanho_janela or len(mascara[0]) != tamanho_janela: 
-        raise ValueError("Tamanho da máscara inválido para o filtro Laplaciano (deve ser igual ao tamanho da janela).")
+        print("Tamanho da máscara inválido para o filtro Laplaciano (deve ser igual ao tamanho da janela).")
+        exit()
         
     m, n = imagem.shape
 
