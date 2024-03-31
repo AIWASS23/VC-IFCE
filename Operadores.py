@@ -2,6 +2,7 @@ import matplotlib.pyplot
 import numpy
 import cv2
 import argparse
+import time
 
 # Questão 7
 
@@ -40,8 +41,20 @@ def apresentarHistograma(imagem):
         eixoVerde = calcularHistograma(imagem, 1)
         eixoAzul = calcularHistograma(imagem, 2)
         matplotlib.pyplot.subplot(131).bar(numpy.arange(256), eixoVermelho, color = 'red')
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+        
         matplotlib.pyplot.subplot(132).bar(numpy.arange(256), eixoVerde, color = 'green')
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+        
         matplotlib.pyplot.subplot(133).bar(numpy.arange(256), eixoAzul, color = 'blue')
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+
         matplotlib.pyplot.title('Histograma RGB')
         matplotlib.pyplot.savefig("histogramaRGB.png")
 
@@ -50,14 +63,33 @@ def apresentarHistograma(imagem):
         eixoVerde = calcularHistograma(imagem, 1)
         eixoAzul = calcularHistograma(imagem, 2)
         matplotlib.pyplot.subplot(131).bar(numpy.arange(256), eixoVermelho, color = 'red')
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+        
         matplotlib.pyplot.subplot(132).bar(numpy.arange(256), eixoVerde, color = 'green')
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+        
         matplotlib.pyplot.subplot(133).bar(numpy.arange(256), eixoAzul, color = 'blue')
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+        
         matplotlib.pyplot.title('Histograma RGBA')
         matplotlib.pyplot.savefig("histogramaRGBA.png")
 
     elif formato == "Grayscale":
         eixoCinza = calcularHistograma(imagem, 0)
         matplotlib.pyplot.subplot(111).bar(numpy.arange(256), eixoCinza, color = 'gray')
+        
+        matplotlib.pyplot.yscale('linear')
+        matplotlib.pyplot.ylim(0, 60000)
+        
         matplotlib.pyplot.title('Histograma Grayscale')
         matplotlib.pyplot.savefig("histogramaGrayscale.png")
 
