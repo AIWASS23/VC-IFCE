@@ -1,0 +1,208 @@
+% 2014_08_12
+% Pedro Pedrosa Rebouças Filho -- pedrosarf@ifce.edu.br
+
+\documentclass[11pt]{article}
+\usepackage{estilo-pp}
+
+% Contador para as etapas da metodologia
+\newcounter{etapas}
+
+
+\begin{document}
+
+% incluindo arquivo capa.tex
+\include{capa}
+
+% retirando a numeração da página de assinatura
+\pagestyle{empty}
+\setcounter{page}{0}
+
+% incluindo folha de assinatura
+%\include{folha-assinatura}
+
+% adicionando a numeração de página para o restante do documento
+\setcounter{page}{1}
+\pagestyle{plain}
+
+% -------------------------------------------------------------------%
+% -------------- Iniciando o texto propriamente dito ----------------%
+% -------------------------------------------------------------------%
+
+\section{Executores}
+\label{s_executores}
+
+Este trabalho será desenvolvido pelas seguintes pessoas:
+
+\begin{itemize}
+	\item \textbf{Aluno(s):}
+	\begin{description}
+		\item[] \textbf{Nome do primeiro aluno}
+		\begin{description}
+			\item[Matrícula:] 1234567-8
+			\item[E-mail:] \url{email@ifce.edu.br}
+			\item[Fone:] (48) 3232 - 1234
+		\end{description}
+
+		\item[] \textbf{Nome do segundo aluno}
+		\begin{description}
+			\item[Matrícula:] 1234567-8
+			\item[E-mail:] \url{email@ifce.edu.br}
+			\item[Fone:] (48) 3232 - 1234
+		\end{description}
+
+		\item[]\textbf{Nome do terceiro aluno}
+		\begin{description}
+			\item[Matrícula:] 1234567-8
+			\item[E-mail:] \url{email@ifce.edu.br}
+			\item[Fone:] (48) 3232 - 1234
+		\end{description}
+
+	\end{description}
+
+	\item \textbf{Orientador(es):}
+
+	\begin{description}
+		\item[] \textbf{Nome do orientador}
+		\begin{description}
+			\item[Instituição: ] IFCE -- campus Maracanaú
+			\item[E-mail:] \url{email@ifce.edu.br}
+			\item[Fone:] (48) 3232 - 1234
+		\end{description}
+
+		\item[] \textbf{Nome do coorientador}
+		\begin{description}
+			\item[Instituição: ] IFCE -- campus Maracanaú
+			\item[E-mail:] \url{email@ifce.edu.br}
+			\item[Fone:] (48) 3232 - 1234
+		\end{description}
+	\end{description}
+\end{itemize}
+
+\section{Introdução e justificativa}
+\label{s_introducao}
+
+\begin{figure}[!htpb]
+	\centering
+	\includegraphics[width=.6\columnwidth]{lion}
+	\caption{Teste}
+	\label{figteste}
+\end{figure}
+
+Teste da Figura \ref{figteste}...
+
+Nesta seção deverá ser apresentado o problema que se deseja resolver. Deve-se ainda indicar o contexto tecnológico onde o projeto está inserido e a bibliografia relacionada com o projeto. No máximo está seção deve ocupar 1 (uma) página. 
+
+O uso de citações ao londo do texto é uma prática desejável. Por exemplo, em \cite{lamport94} é apresentado um documento sobre a preparação de textos usando \LaTeX. Já em \cite{goossens94} é apresentada uma lista de referências rápidas para realizar as mais simples tarefas em \LaTeX.
+
+\section{Objetivos}
+\label{s_objetivos}
+
+Nesta seção deve-se descrever os objetivos mensuráveis do projeto e os resultados esperados, por exemplo, indicando o produto que será apresentado no final do projeto. No máximo está seção deve ocupar 1 (uma) página.
+
+
+\section{Etapas do desenvolvimento}
+\label{s_etapas}
+
+Deve-se descrever as atividades a serem desenvolvidas e os marcos indicativos (componentes, equipamentos, textos, resultados de pequisas, \textit{software}, etc.) que permitirão perceber o progresso das atividades.
+
+\subsection*{Etapa 1: Estudo bibliográfico}
+% modificando o contador do ambiente enumerate
+\renewcommand{\labelenumi}{\arabic{etapas}.\theenumi}
+\setcounter{etapas}{1}
+
+Esta primeira etapa é destinada à formação da equipe do projeto, através do estudo das especificações relacionadas ao trabalho a ser desenvolvido. No decorrer das demais etapas do projeto, outros estudo bibliográficos mais específicos e detalhados serão realizados.
+
+Atividades a serem desenvolvidas:
+
+\begin{enumerate}
+	\item Buscar por informações em diversos lugares
+	\item Ler bastante
+	\item Ler ainda mais
+\end{enumerate}
+
+\subsection*{Etapa 2: Desenvolvimento da parte inicial}
+\addtocounter{etapas}{1}
+
+Nesta etapa serão dados os primeiros passos em busca da conclusão deste projeto de final de curso. O caminho poderá ser difícil mas com certeza resultará em uma grande satisfação.
+
+\begin{enumerate}
+	\item Buscar por ferramentas para o desenvolvimento
+	\item Concepção do protótipo
+	\item Testes e revisão do projeto inicial
+\end{enumerate}
+
+\subsection*{Etapa 3: Desenvolvimento da parte final}
+\addtocounter{etapas}{1}
+
+Nesta etapa o trabalho já estará bem encaminhado e restará apenas aparar algumas arestas. Apesar do caminho ter sido difícil, os resultados obtidos nos deram uma grande satisfação.
+
+\begin{enumerate}
+	\item Verificação dos resultados obtidos
+	\item Novos experimentos com base nas correções
+	\item Escrita sobre os novos experimentos
+\end{enumerate}
+
+\subsection*{Etapa 4: Escrita do documento e defesa do projeto}
+\addtocounter{etapas}{1}
+
+Uma vez que o trabalho já foi finalizado, cabe a esta etapa a escrita da monografia, a preparação da apresentação e por fim a defesa do trabalho.
+
+\begin{enumerate}
+	\item Preparação do texto
+	\item Preparação da apresentação
+	\item Defesa do projeto
+\end{enumerate}
+
+% voltando a configuracao original do ambiente enumerate
+\renewcommand{\labelenumi}{\theenumi}
+
+
+
+\section{Cronograma do desenvolvimento}
+\label{s_cronograma-dev}
+
+Indicar quando cada etapa descrita na seção \ref{s_etapas} será executada. É preciso indicar as semanas onde os marcos indicativos estarão finalizados. Esse cronograma será de grande importância para determinar se o projeto está caminhando bem.
+
+As etapas apresentadas no item \ref{s_etapas} serão executadas da seguinte forma:
+
+\begin{table}[!htpb]
+\centering
+
+\begin{small}
+  \setlength{\tabcolsep}{3pt}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|}\hline
+ & \multicolumn{12}{c|}{Semanas}\\ \cline{2-13}
+\raisebox{1.5ex}{Etapa} & 01 & 02 & 03 & 04 & 05 & 06 & 07 & 08 & 09 & 10 & 11 & 12 \\ \hline
+
+% exemplo de linha
+% 1 & & & & & & & & & & & & \\ \hline
+
+1 & \preenche & \preenche & \preenche & & & & & & & & & \\ \hline
+2 & & & & \preenche & \preenche & \preenche & \preenche & & & & & \\ \hline
+3 & & & & & & & & \preenche & \preenche & \preenche & & \\ \hline
+4 & & & & & & & & & & & \preenche & \preenche \\ \hline
+
+\end{tabular} 
+\end{small}
+\caption{Cronograma das atividades previstas}
+\label{t_cronograma}
+\end{table} 
+
+
+\section{Cronograma financeiro}
+\label{s_cronograma-fin}
+
+Indicar o valor e os momentos de desembolsos e a finalidade dos mesmos.
+
+
+
+% Bibliografia
+% o comando abaixo irá incluir todas as entradas presentes no teu .bib
+% no PDF final
+\nocite{*}
+
+\bibliographystyle{plain}
+\renewcommand{\refname}{Bibliografia}
+\bibliography{referencias.bib}
+
+\end{document}
