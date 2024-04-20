@@ -1,78 +1,46 @@
-import cv2
 import numpy as np
-from matplotlib import pyplot as plt
+import cv2
 
-def gerar_imagem_aleatoria(formato, altura, largura):
-    if formato == "RGB":
-        imagem = np.random.randint(0, 256, size=(altura, largura, 3), dtype=np.uint8)
-    elif formato == "RGBA":
-        imagem = np.random.randint(0, 256, size=(altura, largura, 4), dtype=np.uint8)
-    elif formato == "Tons de Cinza":
-        imagem = np.random.randint(0, 256, size=(altura, largura), dtype=np.uint8)
-    elif formato == "Binaria":
-        imagem = np.random.choice([0, 255], size=(altura, largura))
-    else:
-        raise ValueError("Formato de imagem inválido.")
-    return imagem
+def show_segmentation(mask):
+    cv2.imshow('Segmentation Process', mask)
+    cv2.waitKey(1)  
 
-def converter_rgb_para_cmyk(imagem_rgb):
-    r = imagem_rgb[:, :, 0] / 255.0
-    g = imagem_rgb[:, :, 1] / 255.0
-    b = imagem_rgb[:, :, 2] / 255.0
-
-    k = np.minimum(np.minimum(1 - r, 1 - g), 1 - b)
-    c = (1 - r - k) / (1 - k)
-    m = (1 - g - k) / (1 - k)
-    y = (1 - b - k) / (1 - k)
-
-    imagem_cmyk = np.zeros((imagem_rgb.shape[0], imagem_rgb.shape[1], 4), dtype=np.uint8)
-    imagem_cmyk[:, :, 0] = c * 255  # Cyan
-    imagem_cmyk[:, :, 1] = m * 255  # Magenta
-    imagem_cmyk[:, :, 2] = y * 255  # Yellow
-    imagem_cmyk[:, :, 3] = k * 255  # Black
-
-    return imagem_cmyk
-
-# Definir altura e largura
-altura = 20
-largura = 20
-
-# Gerar imagens aleatórias
-imagem_rgb = gerar_imagem_aleatoria("RGB", altura, largura)
-imagem_rgba = gerar_imagem_aleatoria("RGBA", altura, largura)
-imagem_tons_de_cinza = gerar_imagem_aleatoria("Tons de Cinza", altura, largura)
-imagem_binaria = gerar_imagem_aleatoria("Binaria", altura, largura)
-
-# Converter RGB para CMYK
-imagem_cmyk = converter_rgb_para_cmyk(imagem_rgb)
-
-# Exibir imagens
-plt.subplot(231)
-plt.imshow(imagem_rgb)
-plt.title("RGB")
-
-plt.subplot(232)
-plt.imshow(imagem_rgba)
-plt.title("RGBA")
-
-plt.subplot(233)
-plt.imshow(imagem_tons_de_cinza, cmap="gray")
-plt.title("Tons de Cinza")
-
-plt.subplot(234)
-plt.imshow(imagem_binaria)
-plt.title("Binaria")
-
-plt.subplot(235)
-plt.imshow(imagem_cmyk[:, :, :3])
-plt.title("CMYK")
-
-plt.show()
-
-cv2.imwrite("imagem_rgb.png", imagem_rgb)
-cv2.imwrite("imagem_rgba.png", imagem_rgba)
-cv2.imwrite("imagem_tons_de_cinza.png", imagem_tons_de_cinza)
-cv2.imwrite("imagem_binaria.png", imagem_binaria)
-cv2.imwrite("imagem_cmyk.png", imagem_cmyk[:, :, :3])
-
-print("Imagens salvas com sucesso!")
+def region_growing(imagem, pontosIniciais, intervalo, janela):
+    
+    if janela % 2 == 0:
+        print("A janela deve ser impar 😡!")
+        exit()
+    
+    mascara = np.zeros_like(imagem, dtype = imagem.dtype)
+    
+    lista = []
+    for coordenada in pontosIniciais:
+        lista.append(coordenada)
+    
+    iteration = 0
+    while lista:
+        iteration += 1
+        current_point = lista.pop(0)
+        current_value = imagem[current_point[1], current_point[0]]
+        mascara[current_point[1], current_point[0]] = 255
+        
+        if iteration % 10 == 0:
+            show_segmentation(mascara)
+        
+        
+        for i in range(-(janela//2), (janela//2) + 1):
+            for j in range(-(janela//2), (janela//2) + 1):
+                if i == 0 and j == 0:
+                    continue
+                
+                x = current_point[0] + i
+                y = current_point[1] + j
+                
+                if 0 <= x < imagem.shape[1] and 0 <= y < imagem.shape[0]:
+                    neighbor_value = imagem[y, x]
+                    if np.abs(neighbor_value - current_value) <= intervalo:
+                        if mascara[y, x] == 0:
+                            lista.append((x, y))
+                            mascara[y, x] = 255
+    
+    return mascara
