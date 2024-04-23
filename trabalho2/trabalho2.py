@@ -1,6 +1,7 @@
 import cv2
 import numpy
 import argparse
+import collections
 
 # Questão 1
 
@@ -102,6 +103,38 @@ def limiarizacaoMediaMovel(imagem, tamanho_janela):
     
     imagemLimiarizada = saida.astype(numpy.uint8)
     cv2.imwrite("limiarizacaoPorMedia.png", imagemLimiarizada)
+    
+# Questão 4
+
+def crescimentoDeRegiao(imagem, coordenadasX, coordenadasY, janela, limite):
+    
+    if coordenadasX < 0 or coordenadasX >= imagem.shape[0] or coordenadasY < 0 or coordenadasY >= imagem.shape[1]:
+        print("Coordenadas deve está na imagem 😡")
+        exit()
+
+    linhas, colunas = imagem.shape
+    visitado = numpy.zeros_like(imagem, dtype = bool)
+    regiao = numpy.zeros_like(imagem, dtype = imagem.dtype)
+    fila = collections.deque([(coordenadasX, coordenadasY)])
+    intensidade_semente = imagem[coordenadasX, coordenadasY].astype(imagem.dtype)
+    
+    while fila:
+        x, y = fila.popleft()
+        intensidade_atual = imagem[x, y].astype(imagem.dtype)
+        
+        if not visitado[x, y] and abs(int(intensidade_atual) - int(intensidade_semente)) < limite:
+            regiao[x, y] = 255
+            visitado[x, y] = True
+            
+            for dx in range(-janela, janela + 1):
+                for dy in range(-janela, janela + 1):
+                    x_novo, y_novo = x + dx, y + dy
+                    if 0 <= x_novo < linhas and 0 <= y_novo < colunas and not visitado[x_novo, y_novo]:
+                        fila.append((x_novo, y_novo))
+
+    imagemRegiao = regiao.astype(numpy.uint8)
+    cv2.imwrite("regiao.png", imagemRegiao)
+    
 
 if __name__ == "__main__":
     
@@ -110,50 +143,32 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description = "Processamento de imagens utilizando diferentes transformadas."
     )
-    parser.add_argument(
-        "-k", 
-        "--tamanho_kernel", 
-        type = int, 
-        default = 3,
+    parser.add_argument("-k", "--tamanho_kernel", type = int, default = 3,
         help = "Valor do kernel que será convertido para (w x w)."
     )
-    
-    parser.add_argument(
-        "-b", 
-        "--tamanho_banda", 
-        type = int, 
-        default = 3,
+    parser.add_argument("-b", "--tamanho_banda", type = int, default = 3,
         help = "Largura da banda do filtro em pixels para os tipos de filtro passa-banda e rejeita-banda. Define a largura da faixa ativa ou inativa no filtro. Deve ser um valor inteiro."
     )
-    
-    parser.add_argument(
-        "-t", 
-        "--transformacao", 
-        type = str, 
-        default = "frequencia",
+    parser.add_argument("-t", "--transformacao", type = str, default = "frequencia",
         help = "Transformacão que será aplicada na imagem"
     )
-    parser.add_argument(
-        "-f", 
-        "--tipo_filtro", 
-        type = str, 
-        default = "passa baixa",
+    parser.add_argument("-f", "--tipo_filtro", type = str, default = "passa baixa",
         help = "Opções de Filtragem: passa baixa, passa alta, passa banda e rejeita banda"
     )
-    parser.add_argument(
-        "-r", 
-        "--raio", 
-        type = int, 
-        default = 3, 
-        required = False,
+    parser.add_argument("-r", "--raio", type = int, default = 3, 
         help = "Tamanho do filtro em pixels. Especifica o raio da região ativa no filtro passa-baixa, passa-alta, passa-banda ou rejeita-banda. Deve ser um valor inteiro."
-
     )
-    parser.add_argument(
-        "-i", 
-        "--imagem", 
-        required = True,
+    parser.add_argument("-i", "--imagem", required = True,
         help = "Caminho da imagem de entrada."
+    )
+    parser.add_argument("-x", "--coordenada_x", type = int, default = 10,
+        help = "Coordenada X da imagem"
+    )
+    parser.add_argument("-y", "--coordenada_y", type = int, default = 10,
+        help = "Coordenada Y da imagem"
+    )
+    parser.add_argument("-l", "--limite", type = int, default = 127,
+        help = "Limite do crescimento de região"
     )
     args = parser.parse_args()
 
@@ -172,5 +187,7 @@ if __name__ == "__main__":
         dilatacao(imagem, args.tamanho_kernel)
     elif args.transformacao == "movel":
         limiarizacaoMediaMovel(imagem, args.tamanho_kernel)
+    elif args.transformacao == "regiao":
+        crescimentoDeRegiao(imagem, args.coordenada_x, args.coordenada_y ,args.tamanho_kernel, args.limite)
     else:
         print("Tipo de filtro inválido!")

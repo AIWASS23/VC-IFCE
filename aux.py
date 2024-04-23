@@ -1,46 +1,75 @@
+# import numpy as np
+# import cv2
+
+# def crescimentoDeRegiao(imagem, coordenadas, janela, limite):
+#     linhas, colunas = imagem.shape
+#     visitado = np.zeros_like(imagem)
+#     regiao = np.zeros_like(imagem)
+#     lista = [coordenadas]
+#     intensidade_semente = np.int16(imagem[coordenadas])
+    
+#     while lista:
+#         x, y = lista.pop()
+#         intensidade_atual = np.int16(imagem[x, y])
+#         if visitado[x, y] == 0 and abs(intensidade_atual - intensidade_semente) < limite:
+#             regiao[x, y] = 255
+#             visitado[x, y] = 1
+#             for dx in range(-janela, janela + 1):
+#                 for dy in range(-janela, janela + 1):
+#                     x_novo, y_novo = np.clip(x + dx, 0, linhas-1), np.clip(y + dy, 0, colunas-1)
+#                     if visitado[x_novo, y_novo] == 0:
+#                         lista.append((x_novo, y_novo))
+
+#     imagemRegiao = regiao.astype(np.uint8)
+#     cv2.imwrite("regiao.png", imagemRegiao)
+
+# imagem = cv2.imread('trabalho2.png', cv2.IMREAD_GRAYSCALE)
+
+# # Escolha um ponto de semente (coordenadas)
+# coordenadas = (50, 50)
+
+# # Defina o tamanho da janela (vizinhança)
+# janela = 3
+
+# # Defina o limite para o crescimento da região
+# limite = 10
+
+# # Aplique o crescimento da região
+# regiao = crescimentoDeRegiao(imagem, coordenadas, janela, limite)
+
 import numpy as np
 import cv2
+from collections import deque
 
-def show_segmentation(mask):
-    cv2.imshow('Segmentation Process', mask)
-    cv2.waitKey(1)  
+def crescimentoDeRegiao(imagem, coordenadas, janela, limite):
+    linhas, colunas = imagem.shape
+    visitado = np.zeros_like(imagem, dtype = bool)
+    regiao = np.zeros_like(imagem, dtype = imagem.dtype)
+    fila = deque([coordenadas])
+    intensidade_semente = imagem[coordenadas].astype(imagem.dtype)
+    
+    while fila:
+        x, y = fila.popleft()
+        intensidade_atual = imagem[x, y].astype(imagem.dtype)
+        
+        if not visitado[x, y] and abs(int(intensidade_atual) - int(intensidade_semente)) < limite:
+            regiao[x, y] = 255
+            visitado[x, y] = True
+            
+            for dx in range(-janela, janela + 1):
+                for dy in range(-janela, janela + 1):
+                    x_novo, y_novo = x + dx, y + dy
+                    if 0 <= x_novo < linhas and 0 <= y_novo < colunas and not visitado[x_novo, y_novo]:
+                        fila.append((x_novo, y_novo))
 
-def region_growing(imagem, pontosIniciais, intervalo, janela):
+    imagemRegiao = regiao.astype(np.uint8)
+    cv2.imwrite("regiao.png", imagemRegiao)
     
-    if janela % 2 == 0:
-        print("A janela deve ser impar 😡!")
-        exit()
-    
-    mascara = np.zeros_like(imagem, dtype = imagem.dtype)
-    
-    lista = []
-    for coordenada in pontosIniciais:
-        lista.append(coordenada)
-    
-    iteration = 0
-    while lista:
-        iteration += 1
-        current_point = lista.pop(0)
-        current_value = imagem[current_point[1], current_point[0]]
-        mascara[current_point[1], current_point[0]] = 255
-        
-        if iteration % 10 == 0:
-            show_segmentation(mascara)
-        
-        
-        for i in range(-(janela//2), (janela//2) + 1):
-            for j in range(-(janela//2), (janela//2) + 1):
-                if i == 0 and j == 0:
-                    continue
-                
-                x = current_point[0] + i
-                y = current_point[1] + j
-                
-                if 0 <= x < imagem.shape[1] and 0 <= y < imagem.shape[0]:
-                    neighbor_value = imagem[y, x]
-                    if np.abs(neighbor_value - current_value) <= intervalo:
-                        if mascara[y, x] == 0:
-                            lista.append((x, y))
-                            mascara[y, x] = 255
-    
-    return mascara
+
+# Exemplo de uso
+imagem = cv2.imread('trabalho2.png', cv2.IMREAD_GRAYSCALE)
+coordenadas = (500, 50)
+janela = 1
+limite = 200
+regiao = crescimentoDeRegiao(imagem, coordenadas, janela, limite)
+
