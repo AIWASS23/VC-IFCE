@@ -1,166 +1,167 @@
-# import numpy as np
-# import cv2
-
-# # def transformadaDaDistancia(imagem):
-# #     distancia = np.zeros_like(imagem, dtype = float)
-# #     for i in range(imagem.shape[0]):
-# #         for j in range(imagem.shape[1]):
-# #             if imagem[i, j]:
-# #                 distancia[i, j] = np.min(np.sqrt(
-# #                     np.square(i - np.arange(imagem.shape[0]))[:, np.newaxis] + 
-# #                     np.square(j - np.arange(imagem.shape[1]))
-# #                 ))
-# #     return distancia
-
-# # def encontrarMarcadores(imagem):
-# #     rotulos = np.zeros_like(imagem, dtype=int)
-# #     rotuloAtual = 1
-# #     for i in range(imagem.shape[0]):
-# #         for j in range(imagem.shape[1]):
-# #             if imagem[i, j]:
-# #                 if rotulos[i, j] == 0:
-# #                     lista = [(i, j)]
-# #                     while lista:
-# #                         x, y = lista.pop()
-# #                         if 0 <= x < imagem.shape[0] and 0 <= y < imagem.shape[1] and imagem[x, y] and rotulos[x, y] == 0:
-# #                             rotulos[x, y] = rotuloAtual
-# #                             lista.extend([(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)])
-# #                     rotuloAtual += 1
-# #     return rotulos
-
-# def watershed(imagem, percentual):
-    
-#     # Suavização da imagem
-#     borrado = np.sqrt(
-#         np.square(imagem[:-2, :-2] - imagem[2:, 2:]) +
-#         np.square(imagem[:-2, 2:] - imagem[2:, :-2])
-#     )
-    
-#     # Binarização
-#     corte = np.zeros_like(imagem, dtype=bool)
-#     corte[1:-1, 1:-1] = borrado > np.percentile(borrado, percentual)
-    
-#     # Transformada de distância
-#     distancia = np.zeros_like(imagem, dtype = float)
-#     for i in range(imagem.shape[0]):
-#         for j in range(imagem.shape[1]):
-#             if corte[i, j]:
-#                 distancia[i, j] = np.min(np.sqrt(
-#                     np.square(i - np.arange(imagem.shape[0]))[:, np.newaxis] + 
-#                     np.square(j - np.arange(imagem.shape[1]))
-#                 ))
-    
-#     # Marcadores
-#     rotulos = np.zeros_like(corte, dtype = int)
-#     rotuloAtual = 1
-#     for i in range(1, corte.shape[0] - 1):
-#         for j in range(1, corte.shape[1] - 1):
-#             if corte[i, j]:
-#                 if rotulos[i, j] == 0:
-#                     lista = [(i, j)]
-#                     while lista:
-#                         x, y = lista.pop()
-#                         if 0 <= x < corte.shape[0] and 0 <= y < corte.shape[1] and corte[x, y] and rotulos[x, y] == 0:
-#                             rotulos[x, y] = rotuloAtual
-#                             lista.extend([(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)])
-#                     rotuloAtual += 1
-    
-#     rotulos[0, :] = 0
-#     rotulos[-1, :] = 0
-#     rotulos[:, 0] = 0
-#     rotulos[:, -1] = 0
-    
-#     # Atualização dos marcadores usando a transformada de distância
-#     for i in range(distancia.shape[0]):
-#         for j in range(distancia.shape[1]):
-#             if distancia[i, j] < np.percentile(distancia, 10):
-#                 rotulos[i, j] = 0
-                
-#     # Algoritmo de Watershed simplificado
-#     fila = np.zeros_like(rotulos, dtype=bool)
-#     fila[1:-1, 1:-1] = 1
-    
-#     while np.any(fila):
-#         x, y = np.unravel_index(np.argmax(distancia * fila), fila.shape)
-#         fila[x, y] = 0
-#         for dx in [-1, 0, 1]:
-#             for dy in [-1, 0, 1]:
-#                 if rotulos[x + dx, y + dy] == 0 and distancia[x + dx, y + dy] < distancia[x, y]:
-#                     rotulos[x + dx, y + dy] = rotulos[x, y]
-#                     fila[x + dx, y + dy] = 1
-    
-#     cores = np.random.randint(0, 255, size=(np.max(rotulos) + 1, 3))
-#     imagemColorida = cores[rotulos]
-    
-#     imagemSegmentada = imagemColorida.astype(np.uint8)
-#     cv2.imwrite("watershed.png", imagemSegmentada)
-
-# # Carregar a imagem
-# caminho_imagem = "trabalho2.png"
-# imagem = cv2.imread(caminho_imagem, cv2.IMREAD_GRAYSCALE)
-
-# # Verificar se a imagem foi carregada corretamente
-# if imagem is None:
-#     print("Erro ao carregar a imagem.")
-# else:
-#     # Aplicar a função watershed
-#     percentual = 90  # Definir o percentual para a binarização
-#     watershed(imagem, percentual)
-
-import cv2
 import numpy as np
-from scipy.ndimage import distance_transform_edt
-from scipy.ndimage import label
+import cv2
+import collections
 
-def watershed(imagem, percentual):
-    # Suavização da imagem
-    dx = np.gradient(imagem, axis=0)
-    dy = np.gradient(imagem, axis=1)
-    borrado = np.sqrt(dx**2 + dy**2)
-    
-    # Binarização
-    corte = borrado > np.percentile(borrado, percentual)
-    
-    # Transformada de distância
-    distancia = distance_transform_edt(corte)
-    
-    # Marcadores
-    rotulos, num_rotulos = label(corte)
-    rotulos[0, :] = 0
-    rotulos[-1, :] = 0
-    rotulos[:, 0] = 0
-    rotulos[:, -1] = 0
-    
-    # Atualização dos marcadores usando a transformada de distância
-    rotulos[distancia < np.percentile(distancia, 10)] = 0
-    
-    # Algoritmo de Watershed simplificado
-    fila = np.zeros_like(rotulos, dtype=bool)
-    fila[1:-1, 1:-1] = 1
-    
-    while np.any(fila):
-        x, y = np.unravel_index(np.argmin(distancia * fila), fila.shape)
-        fila[x, y] = 0
-        for dx in [-1, 0, 1]:
-            for dy in [-1, 0, 1]:
-                if rotulos[x + dx, y + dy] == 0 and distancia[x + dx, y + dy] < distancia[x, y]:
-                    rotulos[x + dx, y + dy] = rotulos[x, y]
-                    fila[x + dx, y + dy] = 1
-    
-    cores = np.random.randint(0, 255, size=(np.max(rotulos) + 1, 3))
-    imagemColorida = cores[rotulos]
-    
-    imagemSegmentada = imagemColorida.astype(np.uint8)
-    cv2.imwrite("watershed.png", imagemSegmentada)
+def limiarizacao(imagem, limiar, valor_maximo):
+    imagem_limiarizada = np.where(imagem > limiar, valor_maximo, 0).astype(np.uint8)
+    return imagem_limiarizada
 
-# Carregar a imagem
-caminho_imagem = "trabalho2.png"
-imagem = cv2.imread(caminho_imagem, cv2.IMREAD_GRAYSCALE)
+def crescimento_de_regiao(imagem, semente, limite):
+    altura, largura = imagem.shape
+    regiao = np.zeros_like(imagem, dtype=np.uint8)
+    
+    sementes = [semente]
+    
+    while sementes:
+        x, y = sementes.pop()
+        
+        if x > 0 and np.abs(int(imagem[x, y]) - int(imagem[x - 1, y])) < limite and regiao[x - 1, y] == 0:
+            regiao[x - 1, y] = 255
+            sementes.append((x - 1, y))
+        
+        if x < altura - 1 and np.abs(int(imagem[x, y]) - int(imagem[x + 1, y])) < limite and regiao[x + 1, y] == 0:
+            regiao[x + 1, y] = 255
+            sementes.append((x + 1, y))
+        
+        if y > 0 and np.abs(int(imagem[x, y]) - int(imagem[x, y - 1])) < limite and regiao[x, y - 1] == 0:
+            regiao[x, y - 1] = 255
+            sementes.append((x, y - 1))
+        
+        if y < largura - 1 and np.abs(int(imagem[x, y]) - int(imagem[x, y + 1])) < limite and regiao[x, y + 1] == 0:
+            regiao[x, y + 1] = 255
+            sementes.append((x, y + 1))
+    
+    return regiao
 
-# Verificar se a imagem foi carregada corretamente
-if imagem is None:
-    print("Erro ao carregar a imagem.")
-else:
-    # Aplicar a função watershed
-    percentual = 90  # Definir o percentual para a binarização
-    watershed(imagem, percentual)
+def rotular_regioes(imagem):
+    altura, largura = imagem.shape
+    rotulada = np.zeros_like(imagem, dtype=np.int32)
+    contador_rotulos = 1
+    
+    for i in range(altura):
+        for j in range(largura):
+            if imagem[i, j] == 255 and rotulada[i, j] == 0:
+                regiao = crescimento_de_regiao(imagem, (i, j), 10)
+                rotulada[regiao == 255] = contador_rotulos
+                contador_rotulos += 1
+                
+    return rotulada
+
+def mapeamento_cores(num_rotulos):
+    np.random.seed(42)  
+    return np.random.randint(0, 256, size=(num_rotulos, 3), dtype=np.uint8)
+
+def convolucao(imagem, kernel):
+    linhas, colunas = imagem.shape
+    klinhas, kcolunas = kernel.shape
+    altura_pad = klinhas // 2
+    largura_pad = kcolunas // 2
+    imagem_padding = np.pad(imagem, ((altura_pad, altura_pad), (largura_pad, largura_pad)), mode='constant')
+    saida = np.zeros_like(imagem)
+    
+    for i in range(linhas):
+        for j in range(colunas):
+            saida[i, j] = np.sum(imagem_padding[i:i+klinhas, j:j+kcolunas] * kernel)
+    
+    return saida
+
+def erosao(imagem, kernel):
+    altura, largura = imagem.shape
+    
+    kaltura, klargura = kernel.shape
+    
+    altura_pad = kaltura // 2
+    largura_pad = klargura // 2
+    
+    saida = np.zeros((altura, largura), dtype=imagem.dtype)
+    
+    for i in range(altura_pad, altura - altura_pad):
+        for j in range(largura_pad, largura - largura_pad):
+            minimum = 255
+            for m in range(kaltura):
+                for n in range(klargura):
+                    if kernel[m, n] == 1:
+                        minimum = min(minimum, imagem[i - altura_pad + m, j - largura_pad + n])
+            saida[i, j] = minimum
+            
+    return saida.astype(np.uint8)
+
+def dilatacao(imagem, kernel):
+    altura, largura = imagem.shape
+    
+    kaltura, klargura = kernel.shape
+    
+    altura_pad = kaltura // 2
+    largura_pad = klargura // 2
+    
+    saida = np.zeros((altura, largura), dtype=imagem.dtype)
+    
+    for i in range(altura_pad, altura - altura_pad):
+        for j in range(largura_pad, largura - largura_pad):
+            maximum = 0
+            for m in range(kaltura):
+                for n in range(klargura):
+                    if kernel[m, n] == 1:
+                        maximum = max(maximum, imagem[i - altura_pad + m, j - largura_pad + n])
+            saida[i, j] = maximum
+            
+    return saida.astype(np.uint8)
+
+def aplicar_abertura_manual(imagem, kernel):
+    imagem_erodida = erosao(imagem, kernel)
+    imagem_abertura = dilatacao(imagem_erodida, kernel)
+    return imagem_abertura
+
+def watershed(imagem, limiar, maximo, kernel):
+    
+    kernel = np.ones((kernel, kernel), np.uint8)    
+    cinza_filtrado = aplicar_abertura_manual(imagem, kernel)
+    
+    sobelx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    sobely = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+    
+    grad_x = np.abs(convolucao(cinza_filtrado, sobelx))
+    grad_y = np.abs(convolucao(cinza_filtrado, sobely))
+    
+    magnitude_gradiente = np.sqrt(grad_x**2 + grad_y**2)
+    
+    thresholded = limiarizacao(cinza_filtrado, limiar, maximo)
+    
+    marcadores = rotular_regioes(thresholded)
+    
+    marcadores[magnitude_gradiente == 0] = 0
+    
+    fila = collections.deque()
+    rotulado = np.zeros_like(marcadores)
+    rotulo = 1
+    
+    for i in range(marcadores.shape[0]):
+        for j in range(marcadores.shape[1]):
+            if marcadores[i, j] == 1 and rotulado[i, j] == 0:
+                rotulado[i, j] = rotulo
+                fila.append((i, j))
+                
+                while fila:
+                    x, y = fila.popleft()
+                    for nx, ny in zip([x-1, x+1, x, x], [y, y, y-1, y+1]):
+                        if 0 <= nx < marcadores.shape[0] and 0 <= ny < marcadores.shape[1]:
+                            if marcadores[nx, ny] == 1 and rotulado[nx, ny] == 0:
+                                rotulado[nx, ny] = rotulo
+                                fila.append((nx, ny))
+                
+                rotulo += 1
+    
+    rotulos_unicos = np.unique(rotulado)
+    mapeamento_colorido = mapeamento_cores(len(rotulos_unicos))
+    
+    rotulado_colorido = np.zeros((rotulado.shape[0], rotulado.shape[1], 3), dtype = np.uint8)
+    
+    for rotulo in rotulos_unicos:
+        if rotulo == 0:
+            continue
+        rotulado_colorido[rotulado == rotulo] = mapeamento_colorido[rotulo]
+    
+    cv2.imwrite("watershed.png", rotulado_colorido)
+
+imagem = cv2.imread("trabalho2.png")
+watershed(imagem)
