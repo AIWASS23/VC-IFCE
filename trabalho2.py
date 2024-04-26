@@ -29,53 +29,72 @@ def filtragemFrequencia(imagem, tipo_filtro, tamanho, tamanho_banda):
         
     elif tipo_filtro == 'rejeita-banda':
         filtro[centroLinha - tamanho : centroLinha + tamanho, centroColuna - tamanho - tamanho_banda : centroColuna + tamanho_banda] = 0
-        filtro = numpy.ones((linhas, colunas), numpy.uint8) - filtro
-    
+
     imagem_filtrada_fft_shift = imagem_fft_shift * filtro
     
     imagem_filtrada_fft = numpy.fft.ifftshift(imagem_filtrada_fft_shift)
     imagem_filtrada = numpy.fft.ifft2(imagem_filtrada_fft)
     imagem_filtrada = numpy.abs(imagem_filtrada)
     
-    imagem_filtrada = (255 * (imagem_filtrada - numpy.min(imagem_filtrada)) / (numpy.max(imagem_filtrada) - numpy.min(imagem_filtrada))).astype(numpy.uint8)
+    imagem_filtrada = (255 * (imagem_filtrada - numpy.min(imagem_filtrada)) / (numpy.max(imagem_filtrada) - numpy.min(imagem_filtrada))).astype(numpy.uint8)    
     cv2.imwrite("filtragemFrequencia.png", imagem_filtrada)
     
 # Questão 2
 
-def erosao(imagem, kernel):
+def erosao(imagem, kernel, foto):
     altura, largura = imagem.shape
     
-    saida = numpy.zeros((altura, largura), dtype = imagem.dtype)
+    if isinstance(kernel, int): 
+        kaltura = klargura = kernel
+        kernel = numpy.ones((kaltura, klargura), dtype = int)
+    else:
+        kaltura, klargura = kernel.shape
+        
+    altura_pad = kaltura // 2
+    largura_pad = klargura // 2
     
-    for i in range(1, altura - 1):
-        for j in range(1, largura - 1):
-            minimum = 255 
-            for m in range(kernel):
-                for n in range(kernel):
+    saida = numpy.zeros((altura, largura), dtype=imagem.dtype)
+    
+    for i in range(altura_pad, altura - altura_pad):
+        for j in range(largura_pad, largura - largura_pad):
+            minimum = 255
+            for m in range(kaltura):
+                for n in range(klargura):
                     if kernel[m, n] == 1:
-                        minimum = min(minimum, imagem[i - 1 + m, j - 1 + n])
+                        minimum = min(minimum, imagem[i - altura_pad + m, j - largura_pad + n])
             saida[i, j] = minimum
-            
-    imagemErosada = saida.astype(numpy.uint8)
-    cv2.imwrite("erosao.png", imagemErosada)
+    if foto == 0:
+        imagemErosada = saida.astype(numpy.uint8)
+        cv2.imwrite("erosao.png", imagemErosada)
+    return saida.astype(numpy.uint8)
 
-def dilatacao(imagem, kernel):
+def dilatacao(imagem, kernel, foto):
     altura, largura = imagem.shape
+    
+    if isinstance(kernel, int): 
+        kaltura = klargura = kernel
+        kernel = numpy.ones((kaltura, klargura), dtype = int)
+    else:  
+        kaltura, klargura = kernel.shape
+        
+    altura_pad = kaltura // 2
+    largura_pad = klargura // 2
     
     saida = numpy.zeros((altura, largura), dtype = imagem.dtype)
     
-    for i in range(1, altura-1):
-        for j in range(1, largura-1):
-            maximum = 0 
-            for m in range(kernel):
-                for n in range(kernel):
+    for i in range(altura_pad, altura - altura_pad):
+        for j in range(largura_pad, largura - largura_pad):
+            maximum = 0
+            for m in range(kaltura):
+                for n in range(klargura):
                     if kernel[m, n] == 1:
-                        maximum = max(maximum, imagem[i - 1 + m, j - 1 + n])
+                        maximum = max(maximum, imagem[i - altura_pad + m, j - largura_pad + n])
             saida[i, j] = maximum
-    
-    imagemDilatada = saida.astype(numpy.uint8)
-    cv2.imwrite("dilatada.png", imagemDilatada)
-    
+    if foto == 0:
+        imagemDilatada = saida.astype(numpy.uint8)
+        cv2.imwrite("dilatada.png", imagemDilatada)
+    return saida.astype(numpy.uint8)
+
 # Questão 3
 
 def limiarizacaoMediaMovel(imagem, tamanho_janela):
@@ -170,7 +189,7 @@ def crescimento_de_regiao(imagem, semente, limite):
 
 def rotular_regioes(imagem):
     altura, largura = imagem.shape
-    rotulada = numpy.zeros_like(imagem, dtype=numpy.int32)
+    rotulada = numpy.zeros_like(imagem, dtype = numpy.int32)
     contador_rotulos = 1
     
     for i in range(altura):
@@ -184,7 +203,7 @@ def rotular_regioes(imagem):
 
 def mapeamento_cores(num_rotulos):
     numpy.random.seed(42)  
-    return numpy.random.randint(0, 256, size=(num_rotulos, 3), dtype=numpy.uint8)
+    return numpy.random.randint(0, 256, size=(num_rotulos, 3), dtype = numpy.uint8)
 
 def convolucao(imagem, kernel):
     linhas, colunas = imagem.shape
@@ -200,51 +219,9 @@ def convolucao(imagem, kernel):
     
     return saida
 
-def erosao(imagem, kernel):
-    altura, largura = imagem.shape
-    
-    kaltura, klargura = kernel.shape
-    
-    altura_pad = kaltura // 2
-    largura_pad = klargura // 2
-    
-    saida = numpy.zeros((altura, largura), dtype=imagem.dtype)
-    
-    for i in range(altura_pad, altura - altura_pad):
-        for j in range(largura_pad, largura - largura_pad):
-            minimum = 255
-            for m in range(kaltura):
-                for n in range(klargura):
-                    if kernel[m, n] == 1:
-                        minimum = min(minimum, imagem[i - altura_pad + m, j - largura_pad + n])
-            saida[i, j] = minimum
-            
-    return saida.astype(numpy.uint8)
-
-def dilatacao(imagem, kernel):
-    altura, largura = imagem.shape
-    
-    kaltura, klargura = kernel.shape
-    
-    altura_pad = kaltura // 2
-    largura_pad = klargura // 2
-    
-    saida = numpy.zeros((altura, largura), dtype=imagem.dtype)
-    
-    for i in range(altura_pad, altura - altura_pad):
-        for j in range(largura_pad, largura - largura_pad):
-            maximum = 0
-            for m in range(kaltura):
-                for n in range(klargura):
-                    if kernel[m, n] == 1:
-                        maximum = max(maximum, imagem[i - altura_pad + m, j - largura_pad + n])
-            saida[i, j] = maximum
-            
-    return saida.astype(numpy.uint8)
-
 def aplicar_abertura_manual(imagem, kernel):
-    imagem_erodida = erosao(imagem, kernel)
-    imagem_abertura = dilatacao(imagem_erodida, kernel)
+    imagem_erodida = erosao(imagem, kernel, 1)
+    imagem_abertura = dilatacao(imagem_erodida, kernel, 1)
     return imagem_abertura
 
 def watershed(imagem, limiar, kernel):
@@ -297,6 +274,8 @@ def watershed(imagem, limiar, kernel):
         rotulado_colorido[rotulado == rotulo] = mapeamento_colorido[rotulo]
     
     cv2.imwrite("watershed.png", rotulado_colorido)
+    
+# Questão 6
 
 if __name__ == "__main__":
     
@@ -347,9 +326,9 @@ if __name__ == "__main__":
     if args.transformacao == "frequencia":
         filtragemFrequencia(imagem, args.tipo_filtro, args.raio, args.tamanho_banda)
     elif args.transformacao == "erosao":
-        erosao(imagem, args.tamanho_kernel)
+        erosao(imagem, args.tamanho_kernel, 0)
     elif args.transformacao == "dilatacao":
-        dilatacao(imagem, args.tamanho_kernel)
+        dilatacao(imagem, args.tamanho_kernel, 0)
     elif args.transformacao == "movel":
         limiarizacaoMediaMovel(imagem, args.tamanho_kernel)
     elif args.transformacao == "regiao":
