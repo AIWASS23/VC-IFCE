@@ -277,6 +277,8 @@ def watershed(imagem, limiar, kernel):
     
 # Questão 6
 
+
+
 if __name__ == "__main__":
     
 # --------------- configuração do CLI ------------------------- #  
