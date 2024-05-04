@@ -9,8 +9,7 @@ def houghLinhas(imagem, limiar=100):
     rhos = np.linspace(-diagonal, diagonal, int(diagonal * 2))
     thetas = np.deg2rad(np.arange(-90, 90))
     
-    acumulador = np.zeros((len(rhos), len(thetas)), dtype = imagem.dtype)
-    
+    acumulador = np.zeros((len(rhos), len(thetas)), dtype=imagem.dtype)
     indiceY, indiceX = np.nonzero(bordas)
     
     for i in range(len(indiceX)):
@@ -44,7 +43,7 @@ def houghLinhas(imagem, limiar=100):
 def houghCirculos(imagem, raio, limiar=100):
     bordas = canny(imagem)
     
-    acumulador = np.zeros_like(imagem, dtype = np.uint64)
+    acumulador = np.zeros_like(imagem, dtype=np.uint64)
     indiceY, indiceX = np.nonzero(bordas)
     
     for i in range(len(indiceX)):
@@ -67,7 +66,7 @@ def houghCirculos(imagem, raio, limiar=100):
     return result_imagem
 
 def canny(imagem, limiar_baixo=50, limiar_alto=150):
-    suavizada = desfoqueGaussiano(imagem, tamanho_kernel = 5)
+    suavizada = desfoqueGaussiano(imagem, tamanho_kernel=5)
     magnitude_gradiente, angulo_gradiente = gradiente(suavizada)
     suprimida = supressao(magnitude_gradiente, angulo_gradiente)
     bordas = limiarOtsu(suprimida)
@@ -78,13 +77,7 @@ def desfoqueGaussiano(imagem, tamanho_kernel):
     kernel = np.outer(np.exp(-np.linspace(-1, 1, tamanho_kernel)**2), np.exp(-np.linspace(-1, 1, tamanho_kernel)**2))
     kernel /= kernel.sum()
     
-    suavizada = np.zeros_like(imagem, dtype=np.float64)
-    
-    imagem_padded = np.pad(imagem, ((tamanho_kernel//2, tamanho_kernel//2), (tamanho_kernel//2, tamanho_kernel//2)), mode='constant')
-    
-    for i in range(imagem.shape[0]):
-        for j in range(imagem.shape[1]):
-            suavizada[i, j] = np.sum(kernel * imagem_padded[i:i+tamanho_kernel, j:j+tamanho_kernel])
+    suavizada = cv2.filter2D(imagem, -1, kernel)
     
     return suavizada.astype(np.uint8)
 
@@ -92,25 +85,13 @@ def gradiente(imagem):
     kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     kernel_y = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
     
-    gradiente_x = convolucao(imagem, kernel_x)
-    gradiente_y = convolucao(imagem, kernel_y)
+    gradiente_x = cv2.filter2D(imagem, -1, kernel_x)
+    gradiente_y = cv2.filter2D(imagem, -1, kernel_y)
     
     magnitude_gradiente = np.sqrt(gradiente_x**2 + gradiente_y**2)
     angulo_gradiente = np.arctan2(gradiente_y, gradiente_x)
     
     return magnitude_gradiente, angulo_gradiente
-
-def convolucao(imagem, kernel):
-    kernel = np.flipud(np.fliplr(kernel))
-    saida = np.zeros_like(imagem)
-    
-    imagem_padded = np.pad(imagem, ((kernel.shape[0]//2, kernel.shape[0]//2), (kernel.shape[1]//2, kernel.shape[1]//2)), mode='constant')
-    
-    for i in range(imagem.shape[0]):
-        for j in range(imagem.shape[1]):
-            saida[i, j] = np.sum(imagem_padded[i:i+kernel.shape[0], j:j+kernel.shape[1]] * kernel)
-    
-    return saida
 
 def supressao(magnitude_gradiente, angulo_gradiente):
     suprimida = np.zeros_like(magnitude_gradiente)
@@ -160,9 +141,8 @@ def limiarOtsu(imagem):
     return limiarizado
 
 imagem = cv2.imread('01.jpg', 0)  
-imagem_linhas = houghLinhas(imagem)
+# imagem_linhas = houghLinhas(imagem)
 imagem_circulos = houghCirculos(imagem, 20)
 
 cv2.imwrite('bola.png', imagem_circulos)
-cv2.imwrite('linha.png', imagem_linhas)
-
+# cv2.imwrite('linha.png', imagem_linhas)
