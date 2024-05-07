@@ -74,7 +74,7 @@ def watershed_segmentation(image):
     return segmented_image
 
 # Exemplo de uso
-image_path = 'path_to_image.jpg'
+image_path = '01.jpg'
 image = plt.imread(image_path)
 segmented_image = watershed_segmentation(image)
 

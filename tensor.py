@@ -1,6 +1,9 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from tensorflow.keras import models
+# from tensorflow import keras
+from keras import layers, models
+
+#from tensorflow.keras import models
 
 mnist = tf.keras.datasets.fashion_mnist
 (training_images, training_labels), (test_images, test_labels) = mnist.load_data()
