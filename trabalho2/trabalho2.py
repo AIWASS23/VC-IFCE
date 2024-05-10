@@ -28,6 +28,7 @@ def filtragemFrequencia(imagem, tipo_filtro, tamanho, tamanho_banda):
         filtro = numpy.ones((linhas, colunas), numpy.uint8) - filtro
         
     elif tipo_filtro == 'rejeita-banda':
+        filtro = numpy.ones((linhas, colunas), dtype=imagem.dtype) # Testar isso caso nao funcione remover      
         filtro[centroLinha - tamanho : centroLinha + tamanho, centroColuna - tamanho - tamanho_banda : centroColuna + tamanho_banda] = 0
 
     imagem_filtrada_fft_shift = imagem_fft_shift * filtro
