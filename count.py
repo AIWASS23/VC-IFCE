@@ -426,3 +426,43 @@ imagem_teste = cv2.imread("trabalho2.png", cv2.IMREAD_GRAYSCALE)
 
 # Testar a detecção de círculos
 AHT(imagem_teste, 200, 255)
+
+# def houghCirculos(imagem, raio, limiar):
+#     bordas = canny(imagem)
+    
+#     min_raio = raio - 10
+#     max_raio = raio + 10
+    
+#     altura, largura = bordas.shape
+#     acumulador = numpy.zeros((altura, largura, max_raio - min_raio + 1 ), dtype = bordas.dtype) # dtype = numpy.uint64
+    
+#     y_idxs, x_idxs = numpy.nonzero(bordas)
+#     for i in range(len(x_idxs)):
+#         x = x_idxs[i]
+#         y = y_idxs[i]
+        
+#         # Iterar sobre os valores de raio
+#         for r in range(min_raio, max_raio + 1):
+#             # Iterar sobre os valores de ângulo
+#             for theta_idx in range(360):
+#                 theta = numpy.deg2rad(theta_idx)
+                
+#                 # Calcular o centro do círculo
+#                 a = int(x - r * numpy.cos(theta))
+#                 b = int(y - r * numpy.sin(theta))
+                
+#                 # Verificar se o centro está dentro da imagem
+#                 if 0 <= a < largura and 0 <= b < altura:
+#                     # Acumular voto no bin correspondente
+#                     acumulador[b, a, r - min_raio] += 1
+    
+#     # Encontrar os picos no acumulador
+#     y_pico, x_pico, r_pico = numpy.where(acumulador >= limiar)
+#     result_imagem = imagem.copy()
+    
+#     # Desenhar os círculos detectados
+#     for i in range(len(x_pico)):
+#         cor = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+#         cv2.circle(result_imagem, (x_pico[i], y_pico[i]), r_pico[i] + min_raio, cor, 2)
+
+#     cv2.imwrite("circulo.png", result_imagem)

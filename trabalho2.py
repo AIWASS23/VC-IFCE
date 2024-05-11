@@ -2,6 +2,7 @@ import cv2
 import numpy
 import argparse
 import collections
+import random
 
 # Questão 1
 
@@ -372,7 +373,7 @@ def houghLinhas(imagem, limiar):
         y = y_idxs[i]
 
         for t_idx in range(num_thetas):
-            rho = int(round(x * cos_t[t_idx] + y * sin_t[t_idx])) + int(diagonal)  # Converter rho para inteiro
+            rho = int(round(x * cos_t[t_idx] + y * sin_t[t_idx])) + int(diagonal)  
 
             acumulador[rho, t_idx] += 1
 
@@ -380,49 +381,20 @@ def houghLinhas(imagem, limiar):
     result_imagem = imagem.copy()
     
     for rho, theta in zip(rhos, thetas):
-        a = numpy.cos(thetas[theta])
-        b = numpy.sin(thetas[theta])
+        a = cos_t[theta]
+        b = sin_t[theta]
         x0 = a * (rho - diagonal)
         y0 = b * (rho - diagonal)
-        x1 = int(x0 + 1000 * (-b))
-        y1 = int(y0 + 1000 * (a))
-        x2 = int(x0 - 1000 * (-b))
-        y2 = int(y0 - 1000 * (a))
-        cv2.line(result_imagem, (x1, y1), (x2, y2), (255, 0, 0), 2)  # Linhas em azul
+        comprimento = int(max(altura, largura))
+        x1 = int(x0 + comprimento * (-b))
+        y1 = int(y0 + comprimento * (a))
+        x2 = int(x0 - comprimento * (-b))
+        y2 = int(y0 - comprimento * (a))
+        cor = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+        cv2.line(result_imagem, (x1, y1), (x2, y2), cor, 2)
 
     cv2.imwrite("linha.png", result_imagem)
-
-def houghCirculos(imagem, raio, limiar):
-    bordas = canny(imagem)
-    
-    altura, largura = bordas.shape
-    acumulador = numpy.zeros((altura, largura, raio), dtype=numpy.uint64)
-    
-    thetas = numpy.linspace(0, 2*numpy.pi, 360)
-    cos_t = numpy.cos(thetas)
-    sin_t = numpy.sin(thetas)
-    
-    y_idxs, x_idxs = numpy.nonzero(bordas)
-    
-    for i in range(len(x_idxs)):
-        x = x_idxs[i]
-        y = y_idxs[i]
-
-        for theta_idx in range(len(thetas)):
-            for r in range(raio):
-                a = int(x - r * cos_t[theta_idx])
-                b = int(y - r * sin_t[theta_idx])
-
-                if 0 <= a < largura and 0 <= b < altura:
-                    acumulador[b, a, r] += 1
-    
-    y_pico, x_pico, r_pico = numpy.where(acumulador >= limiar)
-    result_imagem = imagem.copy()
-    
-    for i in range(len(x_pico)):
-        cv2.circle(result_imagem, (x_pico[i], y_pico[i]), raio, (0, 0, 255), 2)
-
-    cv2.imwrite("circulo.png", result_imagem)
 
 if __name__ == "__main__":
     
@@ -484,6 +456,5 @@ if __name__ == "__main__":
         watershed(imagem, args.limiar, args.tamanho_kernel)
     elif args.transformacao == "hough":
         houghLinhas(imagem, args.limiar)
-        houghCirculos(imagem, args.raio, args.limiar)
     else:
         print("Tipo de filtro inválido!")
