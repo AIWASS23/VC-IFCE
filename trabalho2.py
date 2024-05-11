@@ -25,10 +25,10 @@ def filtragemFrequencia(imagem, tipo_filtro, tamanho, tamanho_banda):
         
     elif tipo_filtro == 'passa-banda':
         filtro[centroLinha - tamanho : centroLinha + tamanho, centroColuna - tamanho - tamanho_banda : centroColuna + tamanho_banda] = 1
-        filtro = numpy.ones((linhas, colunas), numpy.uint8) - filtro
+        filtro = numpy.zeros((linhas, colunas), numpy.uint8) - filtro
         
     elif tipo_filtro == 'rejeita-banda':
-        filtro = numpy.ones((linhas, colunas), dtype=imagem.dtype) # Testar isso caso nao funcione remover      
+        filtro = numpy.ones((linhas, colunas), dtype=imagem.dtype)      
         filtro[centroLinha - tamanho : centroLinha + tamanho, centroColuna - tamanho - tamanho_banda : centroColuna + tamanho_banda] = 0
 
     imagem_filtrada_fft_shift = imagem_fft_shift * filtro
@@ -103,19 +103,15 @@ def limiarizacaoMediaMovel(imagem, tamanho_janela):
     altura, largura = imagem.shape
     saida = numpy.zeros((altura, largura), dtype = imagem.dtype)
     
-    # Calcular a média móvel para cada pixel
     for i in range(altura):
         for j in range(largura):
-            # Definir os limites da janela
             inicioAltura = max(0, i - tamanho_janela // 2)
             fimAltura = min(altura, i + tamanho_janela // 2)
             inicioLargura = max(0, j - tamanho_janela // 2)
             fimLargura = min(largura, j + tamanho_janela // 2)
             
-            # Calcular a média móvel
             media = numpy.mean(imagem[inicioAltura : fimAltura, inicioLargura : fimLargura])
             
-            # Limiarização
             if imagem[i, j] > media:
                 saida[i, j] = 255
             else:
@@ -349,16 +345,16 @@ def limiarOtsu(imagem):
     return limiarizado
 
 
-def canny(imagem, limiar_baixo=50, limiar_alto=150):
+def canny(imagem):
     suavizada = desfoqueGaussiano(imagem, tamanho_kernel=5)
     gradientes, angulos = gradiente(suavizada)
     suprimida = supressao(gradientes, angulos)
-    bordas = limiarOtsu(suprimida)  # Usando limiar de Otsu para detectar bordas
+    bordas = limiarOtsu(suprimida)
     
     return bordas
 
 
-def houghLinhas(imagem, limiar=100):
+def houghLinhas(imagem, limiar):
     bordas = canny(imagem)
     
     altura, largura = bordas.shape
@@ -368,7 +364,6 @@ def houghLinhas(imagem, limiar=100):
     sin_t = numpy.sin(thetas)
     num_thetas = len(thetas)
     
-    # Calculando a matriz de votação da Transformada de Hough
     acumulador = numpy.zeros((2 * int(diagonal), num_thetas), dtype=numpy.uint64)
     y_idxs, x_idxs = numpy.nonzero(bordas)
     
@@ -377,12 +372,10 @@ def houghLinhas(imagem, limiar=100):
         y = y_idxs[i]
 
         for t_idx in range(num_thetas):
-            # rho = int(round(x * cos_t[t_idx] + y * sin_t[t_idx])) + diagonal
             rho = int(round(x * cos_t[t_idx] + y * sin_t[t_idx])) + int(diagonal)  # Converter rho para inteiro
 
             acumulador[rho, t_idx] += 1
 
-    # Encontrando linhas com votação acima do limiar
     rhos, thetas = numpy.where(acumulador >= limiar)
     result_imagem = imagem.copy()
     
@@ -399,7 +392,7 @@ def houghLinhas(imagem, limiar=100):
 
     cv2.imwrite("linha.png", result_imagem)
 
-def houghCirculos(imagem, raio, limiar=100):
+def houghCirculos(imagem, raio, limiar):
     bordas = canny(imagem)
     
     altura, largura = bordas.shape
@@ -430,8 +423,6 @@ def houghCirculos(imagem, raio, limiar=100):
         cv2.circle(result_imagem, (x_pico[i], y_pico[i]), raio, (0, 0, 255), 2)
 
     cv2.imwrite("circulo.png", result_imagem)
-
-
 
 if __name__ == "__main__":
     
@@ -491,5 +482,8 @@ if __name__ == "__main__":
         crescimentoDeRegiao(imagem, args.coordenada_x, args.coordenada_y ,args.tamanho_kernel, args.limite)
     elif args.transformacao == "watershed":
         watershed(imagem, args.limiar, args.tamanho_kernel)
+    elif args.transformacao == "hough":
+        houghLinhas(imagem, args.limiar)
+        houghCirculos(imagem, args.raio, args.limiar)
     else:
         print("Tipo de filtro inválido!")
