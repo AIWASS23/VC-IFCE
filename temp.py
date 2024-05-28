@@ -1,8 +1,8 @@
 import numpy as np
-from sklearn.decomposition import TruncatedSVD as SVD
 from sklearn.decomposition import NMF, PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from skimage.feature import hog
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -13,6 +13,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.tree import DecisionTreeClassifier
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Input
+from tensorflow.keras.utils import to_categorical
 
 # Carregamento dos dados
 data = np.loadtxt('ocr_car_numbers_rotulado.txt', delimiter=' ')
@@ -20,11 +21,10 @@ X = data[:, :-1].reshape(-1, 35, 35)  # Atributos
 y = data[:, -1]  # Rótulos
 
 # Extração de atributos
-
 def extract_hog(images):
     hog_features = []
     for img in images:
-        feature = hog(img, pixels_per_cell = (4, 4), cells_per_block = (2, 2), feature_vector = True)
+        feature = hog(img, pixels_per_cell=(4, 4), cells_per_block=(2, 2), feature_vector=True)
         hog_features.append(feature)
     return np.array(hog_features)
 
@@ -32,16 +32,13 @@ def extract_hog(images):
 X_pca = PCA(n_components=50).fit_transform(X.reshape(len(X), -1))
 X_lda = LDA(n_components=9).fit_transform(X.reshape(len(X), -1), y)
 X_nmf = NMF(n_components=50, max_iter=1000).fit_transform(X.reshape(len(X), -1))
-X_svd = SVD(n_components=50).fit_transform(X.reshape(len(X), -1))
 X_hog = extract_hog(X)
 
-
 # Divisão em treino e teste
-X_train_pca, X_test_pca, y_train, y_test = train_test_split(X_pca, y, test_size = 0.2, random_state = 42)
-X_train_lda, X_test_lda = train_test_split(X_lda, test_size = 0.2, random_state = 42)
-X_train_hog, X_test_hog = train_test_split(X_hog, test_size = 0.2, random_state = 42)
-X_train_nmf, X_test_nmf = train_test_split(X_nmf, test_size = 0.2, random_state = 42)
-X_train_svd, X_test_svd = train_test_split(X_svd, test_size = 0.2, random_state = 42)
+X_train_pca, X_test_pca, y_train, y_test = train_test_split(X_pca, y, test_size=0.2, random_state=42)
+X_train_lda, X_test_lda, y_train_lda, y_test_lda = train_test_split(X_lda, y, test_size=0.2, random_state=42)
+X_train_hog, X_test_hog, y_train_hog, y_test_hog = train_test_split(X_hog, y, test_size=0.2, random_state=42)
+X_train_nmf, X_test_nmf, y_train_nmf, y_test_nmf = train_test_split(X_nmf, y, test_size=0.2, random_state=42)
 
 # Modelos
 classifiers = [
@@ -49,18 +46,18 @@ classifiers = [
     ('Random Forest', RandomForestClassifier()),
     ('Decision Tree', DecisionTreeClassifier()),
     ('Naive Bayes Gaussian', GaussianNB()),
-    ('KNN', KNeighborsClassifier()),
-    ('MLP', MLPClassifier(hidden_layer_sizes=(100,), max_iter=500))
+    ('Logistic Regression', LogisticRegression()),
+    ('KNN', KNeighborsClassifier())
 ]
 
 # Função para criar modelo de Deep Learning
 def create_nn(input_shape):
     model = Sequential()
-    model.add(Input(shape = input_shape))
+    model.add(Input(shape=input_shape))
     model.add(Flatten())
-    model.add(Dense(128, activation = 'relu'))
-    model.add(Dense(10, activation = 'softmax'))
-    model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = ['accuracy'])
+    model.add(Dense(128, activation='relu'))
+    model.add(Dense(10, activation='softmax'))
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
 
 # Classe para integrar modelo Keras com scikit-learn
@@ -94,14 +91,13 @@ class KerasClassifierWrapper:
 # Avaliação
 results = {}
 extractors = {
-    'PCA': (X_train_pca, X_test_pca),
-    'LDA': (X_train_lda, X_test_lda),
-    'HOG': (X_train_hog, X_test_hog),
-    'NMF': (X_train_nmf, X_test_nmf),
-    'SVD': (X_train_svd, X_test_svd)
+    'PCA': (X_train_pca, X_test_pca, y_train, y_test),
+    'LDA': (X_train_lda, X_test_lda, y_train_lda, y_test_lda),
+    'HOG': (X_train_hog, X_test_hog, y_train_hog, y_test_hog),
+    'NMF': (X_train_nmf, X_test_nmf, y_train_nmf, y_test_nmf)
 }
 
-for extractor_name, (X_train, X_test) in extractors.items():
+for extractor_name, (X_train, X_test, y_train, y_test) in extractors.items():
     results[extractor_name] = {}
     for clf_name, clf in classifiers:
         kfold = KFold(n_splits=10, shuffle=True, random_state=42)
