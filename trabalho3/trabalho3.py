@@ -19,7 +19,7 @@ data = np.loadtxt('ocr_car_numbers_rotulado.txt', delimiter=' ')
 X = data[:, :-1].reshape(-1, 35, 35)  # Atributos
 y = data[:, -1]  # Rótulos
 
-# Normalização dos dados
+# Normalização dos dados(Só por precaução)
 X = X / 1.0
 
 # Extração de atributos
