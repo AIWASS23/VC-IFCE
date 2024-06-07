@@ -1,8 +1,7 @@
 # VC-IFCE
 
-## Processamento de Imagens com Filtros
+## Projetos da disciplina de visão computacional IFCE campus Fortaleza
 
-### Este é um script Python que permite o processamento de imagens utilizando diferentes filtros. O script utiliza a biblioteca OpenCV (cv2) e numpy para manipular e processar as imagens.
 
 #### Requisitos
 
