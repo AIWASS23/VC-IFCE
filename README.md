@@ -3,66 +3,39 @@
 ## Projetos da disciplina de visão computacional IFCE campus Fortaleza
 
 
-#### Requisitos
+## Requisitos
 
 * Python 3.x
 * OpenCV (cv2)
 * Numpy
+* Argparse
+* Tensorflow
+* Scikit - Learn
+* Keras
+* Pandas
 
-#### Como usar o script
+## 🛠️ Construído com
 
-O script aceita os seguintes parâmetros através da linha de comando:
+[Duck Duck Go](https://duckduckgo.com) <br>
+[Virtual Studio Code](https://code.visualstudio.com) <br>
 
-* -w, --tamanho_janela: Define o tamanho da janela para os filtros. Deve ser um número inteiro positivo. O valor padrão é 3.
+## 🖇️ Scripts Principais
 
-* -m, --mascara: Caminho para um arquivo .txt contendo a máscara utilizada no filtro Laplaciano. Este parâmetro é obrigatório apenas para o filtro Laplaciano.
-
-* -f, --tipo_filtro: Define o tipo de filtro a ser aplicado. As opções disponíveis são:
-- media: Filtro da média
-- mediana: Filtro da mediana
-- gaussiano: Filtro Gaussiano
-- laplaciano: Filtro Laplaciano
-- prewitt: Filtro de Prewitt
-- sobel: Filtro de Sobel
-
-* -s, --sigma: Valor do sigma utilizado exclusivamente no filtro gaussiano. Deve ser um número float. O valor padrão é 1.0.
-* -i, --imagem: Caminho da imagem de entrada que será processada.
-#### Exemplos de Uso
-
-##### Filtro da Média
-* python3 filtros.py -f "media" -w 6 -i caminho_da_imagem.png
-##### Filtro da Mediana
-* python3 filtros.py -f "mediana" -w 5 -i caminho_da_imagem.png
-##### Filtro Gaussiano
-* python filtros.py -f "gaussiano" -w 4 -s 1.756 -i caminho_da_imagem.png
-##### Filtro Laplaciano
-* Para utilizar o filtro Laplaciano, é necessário fornecer um arquivo .txt contendo a máscara. Por exemplo, uma máscara válida é:
+* Trabalho 1 (Filtros)
+* Trabalho 2 (Segmentação)
+* Trabalho 3 (Extratores e Classificadores)
 
 
-0 -1  0 <br>
--1  4 -1 <br>
- 0 -1  0 <br>
+## ✒️ Autores
 
+* **Marcelo De Araújo** - *Trabalho Inicial* - [Marcelo De Araújo](https://github.com/AIWASS23)
 
+## 📄 Licença
 
-A máscara deve ser quadrada
+Este projeto está sob a licença (GNU General Public License v3.0) - veja o arquivo [LICENSE.md](https://github.com/AIWASS23/VC-IFCE/blob/main/LICENSE) para detalhes.
 
-Salve esta máscara em um arquivo mascara.txt e execute:
-* python filtros.py -f "laplaciano" -w 4 -m "mascara.txt" -i caminho_da_imagem.png
+## 🎁 Expressões de gratidão
 
-##### Filtro de Prewitt
-* python filtros.py -f "prewitt" -i caminho_da_imagem.png
-##### Filtro de Sobel
-* python nome_do_script.py -f sobel -i caminho_da_imagem.png
+* Agradeço ao Professor Rebouças pelos ensinamentos e a todos amigos construidos nessa jornada 
 
-#### Saída
-
-O script salvará a imagem processada no diretório atual com o nome baseado no tipo de filtro utilizado. Por exemplo, se você usar o filtro da média, a imagem resultante será media.png.
-
-#### Exemplo Completo
-
-Para aplicar o filtro Gaussiano com uma janela de tamanho 5 e sigma 2.0 em uma imagem chamada imagem.jpg, você usaria o seguinte comando:
-
-python filtros.py -f gaussiano -w 5 -s 2.0 -i imagem.jpg
-Após executar este comando, a imagem processada será salva como gaussiana.png no diretório atual.
-
+⌨️ com ❤️ por [Marcelo De Araújo](https://gist.github.com/AIWASS23) 😊
