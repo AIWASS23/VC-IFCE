@@ -13,6 +13,7 @@
 * Scikit - Learn
 * Keras
 * Pandas
+* Math
 
 ## 🛠️ Construído com
 
