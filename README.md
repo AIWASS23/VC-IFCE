@@ -15,9 +15,6 @@
 * Pandas
 * Math
 
-
-
-
 ## 🛠️ Construído com
 
 [Duck Duck Go](https://duckduckgo.com) <br>
