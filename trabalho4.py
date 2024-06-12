@@ -6,11 +6,13 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
 from tensorflow.keras.optimizers import RMSprop
+from sklearn.model_selection import train_test_split
+
 
 data_folder = os.path.join("images")
 label_folder = os.path.join("labels.csv")
 
-def load_test_data(test_folder, labels_file, target_size=(500, 500)):
+def load_data(test_folder, labels_file, target_size=(500, 500)):
     # Carregar o arquivo CSV com as labels
     labels_df = pd.read_csv(labels_file)
     
@@ -41,7 +43,21 @@ def load_test_data(test_folder, labels_file, target_size=(500, 500)):
     
     return images, labels
 
+# Carregar todas as imagens e labels
+images, labels = load_data(data_folder, label_folder)
 
+# Dividir os dados em treino e teste
+train_images, test_images, train_labels, test_labels = train_test_split(images, labels, test_size=0.2, random_state=42)
+
+# Normalizar os dados
+train_images = train_images / 255.0
+test_images = test_images / 255.0
+
+# Converter as labels para one-hot encoding
+train_labels = tf.keras.utils.to_categorical(train_labels, num_classes=88)
+test_labels = tf.keras.utils.to_categorical(test_labels, num_classes=88)
+
+# Modelos 
 model1 = Sequential()
 model1.add(Conv2D(16, kernel_size=(3, 3), activation='tanh', input_shape=(500, 500, 3)))
 model1.add(Conv2D(32, (3, 3), activation='tanh'))
@@ -84,18 +100,32 @@ model3 = Sequential([
     Dense(88, activation='softmax')
 ])
 
-
-history = model2.fit(
-    train_generator,
-    steps_per_epoch=10,
-    epochs=15,
-    verbose=1
-)
-
 # Compilar os modelos
 model1.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 model2.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 model3.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# Treinar o modelo
+history1 = model1.fit(
+    train_images, train_labels,
+    epochs=10,
+    batch_size=32,
+    validation_data=(test_images, test_labels)
+)
+
+history2 = model2.fit(
+    train_images, train_labels,
+    epochs=10,
+    batch_size=32,
+    validation_data=(test_images, test_labels)
+)
+
+history3 = model3.fit(
+    train_images, train_labels,
+    epochs=10,
+    batch_size=32,
+    validation_data=(test_images, test_labels)
+)
 
 # Avaliar os modelos nos dados de teste
 results_model1 = model1.evaluate(test_images, test_labels)
