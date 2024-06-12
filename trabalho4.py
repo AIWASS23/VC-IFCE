@@ -9,22 +9,25 @@ from tensorflow.keras.optimizers import RMSprop
 from sklearn.model_selection import train_test_split
 
 
-data_folder = os.path.join("images")
-label_folder = os.path.join("labels.csv")
+data_folder = "images"
+label_folder = "labels.csv"
 
-def load_data(test_folder, labels_file, target_size=(500, 500)):
+def load_data(folder, labels_file, target_size=(500, 500)):
     # Carregar o arquivo CSV com as labels
     labels_df = pd.read_csv(labels_file)
     
     # Lista para armazenar os caminhos das imagens e as labels correspondentes
     images = []
     labels = []
+
+    # Mapeamento das labels para números
+    label_mapping = {label: idx for idx, label in enumerate(labels_df['class'].unique())}
     
     # Iterar sobre as imagens na pasta de teste
-    for filename in os.listdir(test_folder):
+    for filename in os.listdir(folder):
         if filename.endswith(".jpg") or filename.endswith(".png"):
             # Caminho completo para a imagem
-            image_path = os.path.join(test_folder, filename)
+            image_path = os.path.join(folder, filename)
             
             # Carregar a imagem e redimensioná-la
             img = image.load_img(image_path, target_size=target_size)
@@ -35,16 +38,18 @@ def load_data(test_folder, labels_file, target_size=(500, 500)):
             
             # Extrair a label correspondente do arquivo CSV
             label = labels_df[labels_df['filename'] == filename]['class'].values[0]
-            labels.append(label)
+            label_idx = label_mapping[label]
+            labels.append(label_idx)
+            # labels.append(label)
     
     # Converter para arrays numpy
     images = np.array(images)
     labels = np.array(labels)
     
-    return images, labels
+    return images, labels, label_mapping
 
 # Carregar todas as imagens e labels
-images, labels = load_data(data_folder, label_folder)
+images, labels, label_mapping = load_data(data_folder, label_folder)
 
 # Dividir os dados em treino e teste
 train_images, test_images, train_labels, test_labels = train_test_split(images, labels, test_size=0.2, random_state=42)
@@ -53,9 +58,12 @@ train_images, test_images, train_labels, test_labels = train_test_split(images, 
 train_images = train_images / 255.0
 test_images = test_images / 255.0
 
+# Obter o número de classes
+num_classes = len(label_mapping)
+
 # Converter as labels para one-hot encoding
-train_labels = tf.keras.utils.to_categorical(train_labels, num_classes=88)
-test_labels = tf.keras.utils.to_categorical(test_labels, num_classes=88)
+train_labels = tf.keras.utils.to_categorical(train_labels, num_classes=num_classes)
+test_labels = tf.keras.utils.to_categorical(test_labels, num_classes=num_classes)
 
 # Modelos 
 model1 = Sequential()
@@ -72,7 +80,7 @@ model1.add(Dropout(0.25))
 model1.add(Flatten())
 model1.add(Dense(32, activation='tanh'))
 model1.add(Dropout(0.5))
-model1.add(Dense(88, activation='softmax'))
+model1.add(Dense(num_classes, activation='softmax'))
 model1.summary()
 
 model2 = Sequential()
@@ -82,7 +90,7 @@ model2.add(Conv2D(64, (3, 3), activation='relu'))
 model2.add(MaxPooling2D(pool_size=(2, 2)))
 model2.add(Flatten())
 model2.add(Dense(128, activation='relu'))
-model2.add(Dense(88, activation='softmax'))
+model2.add(Dense(num_classes, activation='softmax'))
 
 model3 = Sequential([
     Conv2D(16, (3, 3), activation='relu', input_shape=(500, 500, 3)),
@@ -97,7 +105,7 @@ model3 = Sequential([
     MaxPooling2D(2, 2),
     Flatten(),
     Dense(512, activation='relu'),
-    Dense(88, activation='softmax')
+    Dense(num_classes, activation='softmax')
 ])
 
 # Compilar os modelos
@@ -108,21 +116,21 @@ model3.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accu
 # Treinar o modelo
 history1 = model1.fit(
     train_images, train_labels,
-    epochs=10,
+    epochs=3,
     batch_size=32,
     validation_data=(test_images, test_labels)
 )
 
 history2 = model2.fit(
     train_images, train_labels,
-    epochs=10,
+    epochs=3,
     batch_size=32,
     validation_data=(test_images, test_labels)
 )
 
 history3 = model3.fit(
     train_images, train_labels,
-    epochs=10,
+    epochs=3, # use com moderacão
     batch_size=32,
     validation_data=(test_images, test_labels)
 )
