@@ -109,8 +109,8 @@ model3 = Sequential([
 ])
 
 # Compilar os modelos
-model1.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-model2.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model1.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy']) # https://www.tensorflow.org/api_docs/python/tf/keras/losses
+model2.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy']) # https://www.tensorflow.org/api_docs/python/tf/keras/optimizers
 model3.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
 # Treinar o modelo
